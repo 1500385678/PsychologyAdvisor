@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PsychologyConceptSet",
+  "description": "Phase 0 #1 schema: 10 个心理学分类主 md 解析后的统一概念集合。Phase 0 #2 会在此基础上做精炼/去重/打标/向量化。",
+  "type": "object",
+  "required": [
+    "category",
+    "category_id",
+    "source_file",
+    "concept_count",
+    "parsed_at",
+    "schema_version",
+    "concepts"
+  ],
+  "properties": {
+    "category": {
+      "type": "string",
+      "description": "分类中文名,如 '心理学理论' / '认知心理学'"
+    },
+    "category_id": {
+      "type": "string",
+      "pattern": "^\\d{2}$",
+      "description": "两位数分类序号,如 '01' / '10'"
+    },
+    "source_file": {
+      "type": "string",
+      "description": "源 md 相对 PsychologyWeb 仓库根的路径"
+    },
+    "concept_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "concepts 数组长度"
+    },
+    "parsed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 解析时间戳"
+    },
+    "schema_version": {
+      "type": "string",
+      "description": "schema 语义版本,Phase 0 阶段用 0.1.x"
+    },
+    "concepts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "section", "level"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^\\d{2}-\\d{3,}$",
+            "description": "概念 id,形式 '{分类序号}-{3位序号}' 如 01-001"
+          },
+          "title": {
+            "type": "string",
+            "description": "概念标题,即 ### 后的文本(去前后空白)"
+          },
+          "section": {
+            "type": "string",
+            "description": "所属 ## 大节标题,如 '一、心理学基本概念'"
+          },
+          "level": {
+            "type": "integer",
+            "description": "原始 markdown 标题层级(本阶段固定为 3)"
+          },
+          "raw": {
+            "type": "string",
+            "description": "原始段落正文(去掉标题行),Phase 0 #2 会再做结构化"
+          },
+          "first_definition": {
+            "type": "string",
+            "description": "粗切:取首个 '定义:' 或 '**定义**:' 后的第一段,便于检索预览"
+          }
+        }
+      }
+    }
+  }
+}
