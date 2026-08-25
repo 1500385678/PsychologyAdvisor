@@ -1,0 +1,149 @@
+{
+  "$schema": "../concepts/_schema.json",
+  "schema_version": "0.2.0",
+  "schema_note": "Phase 0 #2 量表 schema 首版:与概念库 _schema.json 0.1.0 对齐基础字段(items/scoring/interpretation/source),后续 gad7/pss/isi 等同结构。",
+  "code": "PHQ9",
+  "name": "病人健康问卷抑郁量表",
+  "name_en": "Patient Health Questionnaire-9",
+  "category": "抑郁",
+  "category_id": "05",
+  "intro": "PHQ-9 是基于 DSM-IV 抑郁诊断标准设计的 9 题自评量表,广泛用于初级保健与精神科筛查抑郁症状及其严重度。优点是简短、可自评、与 DSM 诊断高度一致,且为公共领域工具,使用无授权费。",
+  "timeframe": "过去 2 周",
+  "items": [
+    {
+      "id": 1,
+      "text": "做事时提不起兴趣或没有乐趣",
+      "dimension": "anhedonia"
+    },
+    {
+      "id": 2,
+      "text": "感到心情低落、沮丧或绝望",
+      "dimension": "mood"
+    },
+    {
+      "id": 3,
+      "text": "入睡困难、睡不安稳或睡眠过多",
+      "dimension": "sleep"
+    },
+    {
+      "id": 4,
+      "text": "感到疲倦或没有精力",
+      "dimension": "fatigue"
+    },
+    {
+      "id": 5,
+      "text": "食欲不振或吃太多",
+      "dimension": "appetite"
+    },
+    {
+      "id": 6,
+      "text": "觉得自己很糟,或觉得自己很失败,或让自己或家人失望",
+      "dimension": "self_evaluation"
+    },
+    {
+      "id": 7,
+      "text": "对事物专注有困难,例如看报纸或看电视时",
+      "dimension": "concentration"
+    },
+    {
+      "id": 8,
+      "text": "行动或说话速度缓慢到别人可以察觉的程度,或正好相反,烦躁或坐立不安",
+      "dimension": "psychomotor"
+    },
+    {
+      "id": 9,
+      "text": "有不如死掉或用某种方式伤害自己的念头",
+      "dimension": "suicidal_ideation",
+      "is_red_flag": true
+    }
+  ],
+  "scoring": {
+    "options": [
+      {"value": 0, "label": "完全不会"},
+      {"value": 1, "label": "好几天"},
+      {"value": 2, "label": "超过一周"},
+      {"value": 3, "label": "几乎每天"}
+    ],
+    "range": [0, 27],
+    "method": "sum",
+    "item_count": 9
+  },
+  "interpretation": [
+    {
+      "range": [0, 4],
+      "severity": "无/极轻微",
+      "label": "minimal",
+      "color": "#10b981",
+      "description": "无明显抑郁症状,继续保持健康生活方式与社交支持。",
+      "recommendation": "维持现状;若持续感觉不适可 1 个月后复测。"
+    },
+    {
+      "range": [5, 9],
+      "severity": "轻度",
+      "label": "mild",
+      "color": "#84cc16",
+      "description": "存在轻度抑郁症状,可能影响日常功能。",
+      "recommendation": "自助为主:规律作息、运动、社交;可关注心理咨询类科普资源。"
+    },
+    {
+      "range": [10, 14],
+      "severity": "中度",
+      "label": "moderate",
+      "color": "#f59e0b",
+      "description": "中度抑郁症状,日常功能可能明显受损。",
+      "recommendation": "建议寻求专业心理咨询或心理治疗,可优先考虑 CBT/IPT 等循证取向。"
+    },
+    {
+      "range": [15, 19],
+      "severity": "中重度",
+      "label": "moderately_severe",
+      "color": "#f97316",
+      "description": "中重度抑郁症状,日常功能严重受损。",
+      "recommendation": "强烈建议尽快就诊精神科/心理科,评估是否需要药物 + 心理治疗联合干预。"
+    },
+    {
+      "range": [20, 27],
+      "severity": "重度",
+      "label": "severe",
+      "color": "#ef4444",
+      "description": "重度抑郁症状,可能伴有显著功能丧失或自杀风险。",
+      "recommendation": "必须立即就医;若出现自伤/自杀念头,请直接拨打 24h 心理援助热线 400-161-9995。"
+    }
+  ],
+  "red_flags": {
+    "items": [9],
+    "trigger_score_min": 1,
+    "resources": [
+      {
+        "name": "全国心理援助热线",
+        "phone": "400-161-9995",
+        "hours": "24h"
+      },
+      {
+        "name": "北京心理危机研究与干预中心",
+        "phone": "010-82951332",
+        "hours": "24h"
+      },
+      {
+        "name": "希望24热线",
+        "phone": "400-161-9995",
+        "hours": "24h"
+      }
+    ],
+    "action": "若第 9 题得分 ≥ 1,无论总分多少,前端必须立即弹出危机资源卡,不做延迟,不做追问。"
+  },
+  "source": {
+    "original": "Kroenke, K., Spitzer, R. L., & Williams, J. B. (2001). The PHQ-9: validity of a brief depression severity measure. Journal of General Internal Medicine, 16(9), 606-613.",
+    "public_domain": true,
+    "license_note": "PHQ-9 由 Pfizer 免费提供给临床使用,无需授权;但题目原文不可改动,中文翻译建议使用经过信效度验证的版本(如卞崔冬等 2009)。"
+  },
+  "disclaimer": "PHQ-9 是筛查与症状严重度评估工具,不是诊断工具。分数解读仅供个人参考,不能替代专业精神科/心理科医生的诊断与治疗方案。",
+  "metadata": {
+    "created_at": "2026-08-26T03:30:00+08:00",
+    "created_by": "10-心理-Psychology 行业顾问",
+    "phase": "Phase 0 #2",
+    "version": "0.1.0",
+    "status": "draft",
+    "next_step": "验证中文版翻译 → 加入 gad7/pss/isi/psqi 4 个量表 → 建 data/scales/_index.json 总目录"
+  }
+}
