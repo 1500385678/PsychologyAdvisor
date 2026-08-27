@@ -1,0 +1,125 @@
+{
+  "$schema": "../concepts/_schema.json",
+  "schema_version": "0.2.0",
+  "schema_note": "Phase 0 #2 #3 量表骨架:沿用 PHQ-9 模板 (schema 0.2.0) 复制生成,字段顺序/结构与 phq9.json 严格对齐,便于 Phase 1 测评引擎统一解析 5 份量表。",
+  "code": "GAD7",
+  "name": "广泛性焦虑量表",
+  "name_en": "Generalized Anxiety Disorder-7",
+  "category": "焦虑",
+  "category_id": "05",
+  "intro": "GAD-7 是基于 DSM-IV 广泛性焦虑障碍诊断标准设计的 7 题自评量表,广泛用于初级保健与精神科筛查焦虑症状及其严重度。与 PHQ-9 配对使用可同时评估焦虑与抑郁共病,工具简短、可自评、为公共领域,使用无授权费。",
+  "timeframe": "过去 2 周",
+  "items": [
+    {
+      "id": 1,
+      "text": "感到紧张、焦虑或急切",
+      "dimension": "nervousness"
+    },
+    {
+      "id": 2,
+      "text": "不能停止或控制担忧",
+      "dimension": "uncontrollable_worry"
+    },
+    {
+      "id": 3,
+      "text": "对各种各样的事情担忧过多",
+      "dimension": "excessive_worry"
+    },
+    {
+      "id": 4,
+      "text": "很难放松下来",
+      "dimension": "relaxation_difficulty"
+    },
+    {
+      "id": 5,
+      "text": "由于不安而无法静坐",
+      "dimension": "restlessness"
+    },
+    {
+      "id": 6,
+      "text": "变得容易烦恼或急躁",
+      "dimension": "irritability"
+    },
+    {
+      "id": 7,
+      "text": "感到好像有什么可怕的事情会发生",
+      "dimension": "anticipatory_fear"
+    }
+  ],
+  "scoring": {
+    "options": [
+      {"value": 0, "label": "完全不会"},
+      {"value": 1, "label": "好几天"},
+      {"value": 2, "label": "超过一周"},
+      {"value": 3, "label": "几乎每天"}
+    ],
+    "range": [0, 21],
+    "method": "sum",
+    "item_count": 7
+  },
+  "interpretation": [
+    {
+      "range": [0, 4],
+      "severity": "无/极轻微",
+      "label": "minimal",
+      "color": "#10b981",
+      "description": "无明显焦虑症状,继续保持健康生活方式与放松练习。",
+      "recommendation": "维持现状;若持续感觉紧张可 1 个月后复测。"
+    },
+    {
+      "range": [5, 9],
+      "severity": "轻度",
+      "label": "mild",
+      "color": "#84cc16",
+      "description": "存在轻度焦虑症状,可能影响日常专注与睡眠。",
+      "recommendation": "自助为主:规律作息、呼吸练习(4-7-8)、限制咖啡因;可关注焦虑管理类科普资源。"
+    },
+    {
+      "range": [10, 14],
+      "severity": "中度",
+      "label": "moderate",
+      "color": "#f59e0b",
+      "description": "中度焦虑症状,日常功能可能明显受损,常伴有躯体症状(心慌/肌肉紧张/睡眠问题)。",
+      "recommendation": "建议寻求专业心理咨询,优先考虑 CBT(认知行为疗法)或正念干预;如持续 > 1 个月建议就诊。"
+    },
+    {
+      "range": [15, 21],
+      "severity": "重度",
+      "label": "severe",
+      "color": "#ef4444",
+      "description": "重度焦虑症状,日常功能严重受损,可能伴惊恐发作或广泛性焦虑障碍。",
+      "recommendation": "强烈建议尽快就诊精神科/心理科,评估是否需要药物 + 心理治疗联合干预。"
+    }
+  ],
+  "red_flags": {
+    "items": [],
+    "trigger_score_min": null,
+    "resources": [
+      {
+        "name": "全国心理援助热线",
+        "phone": "400-161-9995",
+        "hours": "24h"
+      },
+      {
+        "name": "北京心理危机研究与干预中心",
+        "phone": "010-82951332",
+        "hours": "24h"
+      }
+    ],
+    "action": "GAD-7 本身不包含自伤红旗项;若用户在测评中文字反馈自杀/自伤念头,需联动 crisis_keywords 词表(待建)触发危机资源卡。"
+  },
+  "source": {
+    "original": "Spitzer, R. L., Kroenke, K., Williams, J. B., & Löwe, B. (2006). A brief measure for assessing generalized anxiety disorder: the GAD-7. Archives of Internal Medicine, 166(10), 1092-1097.",
+    "public_domain": true,
+    "license_note": "GAD-7 为公共领域工具,使用无授权费;中文翻译建议使用经过信效度验证的版本(如何筱衍 2010 / 钱洁 2012)。"
+  },
+  "disclaimer": "GAD-7 是筛查与症状严重度评估工具,不是诊断工具。分数解读仅供个人参考,不能替代专业精神科/心理科医生的诊断与治疗方案。",
+  "metadata": {
+    "created_at": "2026-08-28T03:30:00+08:00",
+    "created_by": "10-心理-Psychology 行业顾问",
+    "phase": "Phase 0 #2 #3",
+    "version": "0.1.0",
+    "status": "draft",
+    "next_step": "验证中文版翻译(何筱衍 2010 / 钱洁 2012) → 沿用此模板补 PSS / ISI / PSQI 3 份骨架 → 更新 _index.json 把 GAD7 状态从 pending 改为 ready"
+  }
+}
