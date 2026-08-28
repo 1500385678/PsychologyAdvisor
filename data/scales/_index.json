@@ -1,12 +1,12 @@
 {
   "$schema": "../concepts/_schema.json",
   "schema_version": "0.3.0",
-  "schema_note": "Phase 0 #2 #4 量表总目录更新:沿用 0827 v0.1.0 schema,新增 GAD7 字段 + status 翻转 ready;PSS/ISI/PSQI 仍为 pending;为 Phase 1 测评页选量表下拉提供数据源。",
+  "schema_note": "Phase 0 #2 #5 量表总目录更新:沿用 0828 v0.1.1 schema,新增 PSS 字段 + status 翻转 ready;ISI/PSQI 仍为 pending;为 Phase 1 测评页选量表下拉提供数据源。",
   "code": "SCALES_INDEX",
   "name": "心理测评量表总目录",
   "name_en": "Psychometric Scales Index",
-  "version": "0.1.1",
-  "updated_at": "2026-08-28",
+  "version": "0.1.2",
+  "updated_at": "2026-08-29",
   "owner": "10-心理-Psychology",
   "intro": "PsychologyAdvisor 心理测评量表总目录。覆盖抑郁/焦虑/压力/失眠 4 大常见议题共 5 份成熟量表,均为公共领域或已获授权的自评工具,提供中文版常模或本地化版本。状态字段:ready=已建可测,pending=待补骨架。",
   "scales": [
@@ -56,7 +56,7 @@
       "score_range": "0-40",
       "severity_bands": 3,
       "has_crisis_flag": false,
-      "status": "pending",
+      "status": "ready",
       "file": "data/scales/pss.json",
       "source": "Cohen 1983 / 杨廷忠 2003 中文版",
       "use_case": "主观压力水平评估,适合职场与学生群体",
@@ -99,13 +99,13 @@
   ],
   "stats": {
     "total_scales": 5,
-    "ready": 2,
-    "pending": 3,
+    "ready": 3,
+    "pending": 2,
     "categories": ["抑郁", "焦虑", "压力", "失眠"]
   },
   "related": {
     "schema_ref": "../concepts/_schema.json",
     "crisis_keywords_placeholder": "data/crisis_keywords.json (待建)",
-    "phase_0_roadmap": "PHQ-9 / GAD-7 已就绪 → 复制模板批量产出 PSS / ISI / PSQI 3 份骨架"
+    "phase_0_roadmap": "PHQ-9 / GAD-7 / PSS 已就绪 → 复制模板批量产出 ISI / PSQI 2 份骨架 → Phase 0 量表 5/5 = 100%"
   }
 }

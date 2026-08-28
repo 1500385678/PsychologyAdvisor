@@ -1,0 +1,139 @@
+{
+  "$schema": "../concepts/_schema.json",
+  "schema_version": "0.2.0",
+  "schema_note": "Phase 0 #2 #5 量表骨架:沿用 PHQ-9 / GAD-7 模板 (schema 0.2.0) 复制生成,字段顺序/结构与 phq9.json 严格对齐,便于 Phase 1 测评引擎统一解析 5 份量表。PSS-10 含 4 道反向计分题(4/5/7/8),计分时需 reverse_score。",
+  "code": "PSS",
+  "name": "知觉压力量表",
+  "name_en": "Perceived Stress Scale",
+  "category": "压力",
+  "category_id": "05",
+  "intro": "PSS-10 是 Cohen 等 1983 年编制的压力知觉量表的 10 题简版,测量个体在过去一个月中对生活中不可预测、不可控制、超负荷事件的总体感受程度。优点是简短、跨文化适用、不聚焦特定压力源,适合职场与学生群体作为压力水平的快速筛查。中文版由杨廷忠 2003 年修订,信效度良好。",
+  "timeframe": "过去 1 个月",
+  "items": [
+    {
+      "id": 1,
+      "text": "一些无法预期的事情发生而感到心烦意乱",
+      "dimension": "unpredictability"
+    },
+    {
+      "id": 2,
+      "text": "感觉无法控制自己生活中重要的事情",
+      "dimension": "lack_of_control"
+    },
+    {
+      "id": 3,
+      "text": "感到紧张不安和压力",
+      "dimension": "nervousness"
+    },
+    {
+      "id": 4,
+      "text": "成功地处理恼人的生活麻烦",
+      "dimension": "coping_self_efficacy",
+      "is_reverse_scored": true
+    },
+    {
+      "id": 5,
+      "text": "感到自己有效地处理生活中所发生的重要改变",
+      "dimension": "coping_self_efficacy",
+      "is_reverse_scored": true
+    },
+    {
+      "id": 6,
+      "text": "感到自己可以处理好个人感情问题",
+      "dimension": "coping_self_efficacy"
+    },
+    {
+      "id": 7,
+      "text": "感到事情顺着自己的意思发展",
+      "dimension": "perceived_control",
+      "is_reverse_scored": true
+    },
+    {
+      "id": 8,
+      "text": "发现自己无法应付所有自己必须做的事情",
+      "dimension": "overload",
+      "is_reverse_scored": true
+    },
+    {
+      "id": 9,
+      "text": "能够控制生活中惹人厌烦的事情",
+      "dimension": "perceived_control"
+    },
+    {
+      "id": 10,
+      "text": "感到所有事情都按照自己所期待的方向发展",
+      "dimension": "perceived_control"
+    }
+  ],
+  "scoring": {
+    "options": [
+      {"value": 0, "label": "从不"},
+      {"value": 1, "label": "几乎不"},
+      {"value": 2, "label": "有时"},
+      {"value": 3, "label": "经常"},
+      {"value": 4, "label": "总是"}
+    ],
+    "range": [0, 40],
+    "method": "sum_with_reverse",
+    "item_count": 10,
+    "reverse_items": [4, 5, 7, 8],
+    "reverse_formula": "reverse_score = 4 - raw_score (即 0↔4, 1↔3, 2 保持不变)"
+  },
+  "interpretation": [
+    {
+      "range": [0, 13],
+      "severity": "低压力",
+      "label": "low",
+      "color": "#10b981",
+      "description": "压力水平较低,个体对生活事件有较好的掌控感和应对能力。",
+      "recommendation": "维持现状;可继续保持规律作息、运动、社交等健康生活方式。"
+    },
+    {
+      "range": [14, 26],
+      "severity": "中等压力",
+      "label": "moderate",
+      "color": "#f59e0b",
+      "description": "中等压力水平,可能影响日常专注、睡眠与情绪稳定性。",
+      "recommendation": "建议主动管理压力源:时间管理、运动、放松训练(4-7-8 呼吸/正念);持续 > 1 个月建议关注情绪变化。"
+    },
+    {
+      "range": [27, 40],
+      "severity": "高压力",
+      "label": "high",
+      "color": "#ef4444",
+      "description": "高压力水平,日常功能可能明显受损,长期可能引发焦虑/抑郁/躯体症状。",
+      "recommendation": "强烈建议寻求专业心理咨询;评估压力源(职场/家庭/健康)并制定减压方案,必要时就诊精神科/心理科。"
+    }
+  ],
+  "red_flags": {
+    "items": [],
+    "trigger_score_min": null,
+    "resources": [
+      {
+        "name": "全国心理援助热线",
+        "phone": "400-161-9995",
+        "hours": "24h"
+      },
+      {
+        "name": "北京心理危机研究与干预中心",
+        "phone": "010-82951332",
+        "hours": "24h"
+      }
+    ],
+    "action": "PSS 本身不包含自伤红旗项;高压力(≥ 27 分)用户需联动 crisis_keywords 词表(待建)与 PHQ-9/GAD-7 共病评估,持续监测情绪变化。"
+  },
+  "source": {
+    "original": "Cohen, S., Kamarck, T., & Mermelstein, R. (1983). A global measure of perceived stress. Journal of Health and Social Behavior, 24(4), 385-396.",
+    "public_domain": true,
+    "license_note": "PSS 为公共领域工具,使用无授权费;中文翻译采用杨廷忠 2003 修订版(《中国临床心理学杂志》),信效度验证良好。"
+  },
+  "disclaimer": "PSS-10 是主观压力水平评估工具,不是医学诊断工具。分数解读仅供个人参考,不能替代专业精神科/心理科医生的评估与干预。",
+  "metadata": {
+    "created_at": "2026-08-29T03:30:00+08:00",
+    "created_by": "10-心理-Psychology 行业顾问",
+    "phase": "Phase 0 #2 #5",
+    "version": "0.1.0",
+    "status": "draft",
+    "next_step": "验证中文版翻译(杨廷忠 2003) → 沿用此模板补 ISI / PSQI 2 份骨架 → 更新 _index.json 把 PSS 状态从 pending 改为 ready"
+  }
+}
