@@ -1,0 +1,128 @@
+{
+  "$schema": "../concepts/_schema.json",
+  "schema_version": "0.2.0",
+  "schema_note": "Phase 0 #2 #4 量表骨架:沿用 PHQ-9 / GAD-7 / PSS 模板 (schema 0.2.0) 复制生成,字段顺序/结构与 phq9.json 严格对齐,便于 Phase 1 测评引擎统一解析 5 份量表。ISI-7 全部 7 题均为正向计分(无反向题),无自伤红旗但失眠与抑郁焦虑共病率高,重度失眠(≥ 22)建议联动 PHQ-9/GAD-7 共病评估。",
+  "code": "ISI",
+  "name": "失眠严重程度指数",
+  "name_en": "Insomnia Severity Index",
+  "category": "失眠",
+  "category_id": "05",
+  "intro": "ISI 是 Morin 等 1993 年编制的 7 题自评量表,用于评估个体过去 2 周的失眠严重程度及其对日间功能的影响。题目覆盖入睡困难、维持睡眠困难、早醒、睡眠满意度、可察觉程度、担忧程度、日间功能受损 7 个维度。是国际公认的失眠筛查与疗效评估工具,与 DSM 失眠诊断标准一致,临床与研究通用。中文版由李恩泽等 2018 年修订,信效度良好。",
+  "timeframe": "过去 2 周",
+  "items": [
+    {
+      "id": 1,
+      "text": "入睡困难",
+      "dimension": "sleep_onset"
+    },
+    {
+      "id": 2,
+      "text": "睡眠维持困难(难以保持睡眠状态)",
+      "dimension": "sleep_maintenance"
+    },
+    {
+      "id": 3,
+      "text": "早醒问题",
+      "dimension": "early_awakening"
+    },
+    {
+      "id": 4,
+      "text": "对当前睡眠模式的满意程度",
+      "dimension": "sleep_satisfaction"
+    },
+    {
+      "id": 5,
+      "text": "睡眠问题对日间功能的影响程度(如疲劳、情绪、注意力等)",
+      "dimension": "daytime_function"
+    },
+    {
+      "id": 6,
+      "text": "他人可察觉到的睡眠问题程度",
+      "dimension": "noticeability"
+    },
+    {
+      "id": 7,
+      "text": "对当前睡眠问题的担忧/苦恼程度",
+      "dimension": "distress"
+    }
+  ],
+  "scoring": {
+    "options": [
+      {"value": 0, "label": "无"},
+      {"value": 1, "label": "轻度"},
+      {"value": 2, "label": "中度"},
+      {"value": 3, "label": "重度"},
+      {"value": 4, "label": "极重度"}
+    ],
+    "range": [0, 28],
+    "method": "sum",
+    "item_count": 7,
+    "reverse_items": [],
+    "reverse_formula": null
+  },
+  "interpretation": [
+    {
+      "range": [0, 7],
+      "severity": "无临床意义失眠",
+      "label": "no_insomnia",
+      "color": "#10b981",
+      "description": "无明显失眠症状,睡眠质量对日间功能无显著影响。",
+      "recommendation": "维持健康睡眠卫生习惯:规律作息、睡前避免咖啡因/电子屏幕、卧室仅用于睡眠。"
+    },
+    {
+      "range": [8, 14],
+      "severity": "亚临床失眠",
+      "label": "subthreshold",
+      "color": "#84cc16",
+      "description": "存在轻度失眠症状,偶发但尚不构成临床诊断。",
+      "recommendation": "建议加强睡眠卫生;可尝试放松训练(4-7-8 呼吸/正念冥想);持续 > 1 个月建议复测。"
+    },
+    {
+      "range": [15, 21],
+      "severity": "临床失眠(中度)",
+      "label": "moderate_clinical",
+      "color": "#f59e0b",
+      "description": "达到临床失眠诊断阈值,日间功能明显受损,可能伴有情绪/注意力问题。",
+      "recommendation": "强烈建议寻求专业评估;首选 CBT-I(认知行为治疗),必要时结合短期药物辅助;评估与焦虑/抑郁共病。"
+    },
+    {
+      "range": [22, 28],
+      "severity": "临床失眠(重度)",
+      "label": "severe_clinical",
+      "color": "#ef4444",
+      "description": "重度失眠,日常功能严重受损,可能与精神/躯体疾病共病,需及时干预。",
+      "recommendation": "立即就诊精神科/睡眠专科;强烈建议联动 PHQ-9 / GAD-7 评估焦虑抑郁共病;评估是否需要药物 + CBT-I 联合干预。"
+    }
+  ],
+  "red_flags": {
+    "items": [],
+    "trigger_score_min": null,
+    "resources": [
+      {
+        "name": "全国心理援助热线",
+        "phone": "400-161-9995",
+        "hours": "24h"
+      },
+      {
+        "name": "北京心理危机研究与干预中心",
+        "phone": "010-82951332",
+        "hours": "24h"
+      }
+    ],
+    "action": "ISI 本身不包含自伤红旗项;重度失眠(≥ 22 分)用户需联动 PHQ-9 / GAD-7 共病评估,持续监测情绪变化与睡眠-情绪双向影响。"
+  },
+  "source": {
+    "original": "Morin, C. M. (1993). Insomnia: Psychological assessment and management. Guilford Press. / Bastien, C. H., Vallières, A., & Morin, C. M. (2001). Validation of the Insomnia Severity Index as an outcome measure for insomnia research. Sleep Medicine, 2(4), 297-307.",
+    "public_domain": true,
+    "license_note": "ISI 为公共领域研究工具,使用无授权费;中文翻译采用李恩泽等 2018 修订版(《临床精神医学杂志》),信效度验证良好。"
+  },
+  "disclaimer": "ISI 是失眠严重度评估与疗效监测工具,不是失眠障碍的诊断工具。分数解读仅供个人参考,不能替代专业精神科/睡眠专科医生的评估与治疗方案。",
+  "metadata": {
+    "created_at": "2026-08-31T03:30:00+08:00",
+    "created_by": "10-心理-Psychology 行业顾问",
+    "phase": "Phase 0 #2 #4",
+    "version": "0.1.0",
+    "status": "draft",
+    "next_step": "验证中文版翻译(李恩泽 2018) → 沿用此模板补 PSQI 骨架 → 更新 _index.json 把 ISI 状态从 pending 改为 ready"
+  }
+}
