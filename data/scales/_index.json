@@ -1,12 +1,12 @@
 {
   "$schema": "../concepts/_schema.json",
   "schema_version": "0.3.0",
-  "schema_note": "Phase 0 #2 #4 量表总目录更新:沿用 0829 v0.1.2 schema,新增 ISI 字段 + status 翻转 ready;PSQI 仍为 pending;为 Phase 1 测评页选量表下拉提供数据源。",
+  "schema_note": "Phase 0 #2 #5 量表总目录更新:沿用 0831 v0.1.3 schema,新增 PSQI 字段 + status 翻转 ready;5 量表 5/5 = 100% ready,Phase 0 量表盘点完成;为 Phase 1 测评页选量表下拉提供数据源。",
   "code": "SCALES_INDEX",
   "name": "心理测评量表总目录",
   "name_en": "Psychometric Scales Index",
-  "version": "0.1.3",
-  "updated_at": "2026-08-31",
+  "version": "0.1.4",
+  "updated_at": "2026-09-01",
   "owner": "10-心理-Psychology",
   "intro": "PsychologyAdvisor 心理测评量表总目录。覆盖抑郁/焦虑/压力/失眠 4 大常见议题共 5 份成熟量表,均为公共领域或已获授权的自评工具,提供中文版常模或本地化版本。状态字段:ready=已建可测,pending=待补骨架。",
   "scales": [
@@ -88,24 +88,24 @@
       "items_count": 19,
       "timeframe": "过去 1 个月",
       "score_range": "0-21",
-      "severity_bands": 2,
+      "severity_bands": 4,
       "has_crisis_flag": false,
-      "status": "pending",
+      "status": "ready",
       "file": "data/scales/psqi.json",
-      "source": "Buysse 1989 / 汪向东 1999 中文版",
-      "use_case": "综合睡眠质量评估,7 个维度(质量/潜伏期/时长/效率/干扰/药物/日间功能)",
+      "source": "Buysse 1989 / 刘贤臣 1996 中文版",
+      "use_case": "综合睡眠质量评估,7 个维度(质量/潜伏期/时长/效率/干扰/药物/日间功能),5 分分界,与 ISI 互补(ISI 测严重度,PSQI 测综合质量)",
       "duration_min": 8
     }
   ],
   "stats": {
     "total_scales": 5,
-    "ready": 4,
-    "pending": 1,
+    "ready": 5,
+    "pending": 0,
     "categories": ["抑郁", "焦虑", "压力", "失眠"]
   },
   "related": {
     "schema_ref": "../concepts/_schema.json",
     "crisis_keywords_placeholder": "data/crisis_keywords.json (待建)",
-    "phase_0_roadmap": "PHQ-9 / GAD-7 / PSS / ISI 已就绪 → 复制模板批量产出 PSQI 1 份骨架 → Phase 0 量表 5/5 = 100%"
+    "phase_0_roadmap": "Phase 0 量表盘点完成:PHQ-9 / GAD-7 / PSS / ISI / PSQI 5 份全部 ready → 下一步补 Phase 0 辅助资产(情绪标签/危机词/资源导航)→ Phase 1 启动"
   }
 }

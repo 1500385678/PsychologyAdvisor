@@ -1,0 +1,292 @@
+{
+  "$schema": "../concepts/_schema.json",
+  "schema_version": "0.2.0",
+  "schema_note": "Phase 0 #2 #5 量表骨架:沿用 PHQ-9 / GAD-7 / PSS / ISI 模板 (schema 0.2.0) 复制生成,字段顺序/结构与 isi.json 严格对齐,便于 Phase 1 测评引擎统一解析 5 份量表。PSQI-19 题分 7 个维度(主观睡眠质量/入睡潜伏期/睡眠时长/睡眠效率/睡眠干扰/催眠药物/日间功能),每维度独立计 0-3 分,总分 0-21。5 分为睡眠质量良好/不良分界。无自伤红旗但与 ISI 互补(ISI 测失眠严重度,PSQI 测综合睡眠质量),重度睡眠问题(总分 > 10)建议联动 PHQ-9 / GAD-7 共病评估。",
+  "code": "PSQI",
+  "name": "匹兹堡睡眠质量指数",
+  "name_en": "Pittsburgh Sleep Quality Index",
+  "category": "失眠",
+  "category_id": "05",
+  "intro": "PSQI 是 Buysse 等 1989 年编制的 19 题自评量表,用于评估个体过去 1 个月的综合睡眠质量及其 7 个维度。题目覆盖主观睡眠质量、入睡潜伏期、睡眠时长、睡眠效率、睡眠干扰、催眠药物使用、日间功能 7 个维度。是国际公认的睡眠质量综合评估工具,与多导睡眠图(psg)有良好相关性,临床与研究通用。中文版由刘贤臣等 1996 年修订,信效度良好(分界值 5 分,> 5 为睡眠质量不良)。",
+  "timeframe": "过去 1 个月",
+  "items": [
+    {
+      "id": 1,
+      "text": "过去一个月你通常晚上几点上床睡觉?(24 小时制,几点几分)",
+      "dimension": "habitual_sleep_efficiency",
+      "type": "open_time"
+    },
+    {
+      "id": 2,
+      "text": "过去一个月你每晚通常要多长时间(分钟)才能入睡?",
+      "dimension": "sleep_latency",
+      "type": "open_minutes"
+    },
+    {
+      "id": 3,
+      "text": "过去一个月你通常每天早上几点起床?(24 小时制,几点几分)",
+      "dimension": "habitual_sleep_efficiency",
+      "type": "open_time"
+    },
+    {
+      "id": 4,
+      "text": "过去一个月你每晚实际睡眠时间有多少小时?(不等于卧床时间)",
+      "dimension": "sleep_duration",
+      "type": "open_hours"
+    },
+    {
+      "id": 5,
+      "text": "过去一个月你是否因为以下问题影响睡眠而烦恼(任一项发生即勾选)",
+      "dimension": "sleep_disturbances",
+      "type": "header",
+      "sub_items": true
+    },
+    {
+      "id": "5a",
+      "text": "a. 不能在 30 分钟内入睡",
+      "dimension": "sleep_latency",
+      "type": "disturbance"
+    },
+    {
+      "id": "5b",
+      "text": "b. 夜间或凌晨醒来",
+      "dimension": "sleep_disturbances",
+      "type": "disturbance"
+    },
+    {
+      "id": "5c",
+      "text": "c. 夜间去厕所",
+      "dimension": "sleep_disturbances",
+      "type": "disturbance"
+    },
+    {
+      "id": "5d",
+      "text": "d. 呼吸不畅",
+      "dimension": "sleep_disturbances",
+      "type": "disturbance"
+    },
+    {
+      "id": "5e",
+      "text": "e. 咳嗽或打鼾",
+      "dimension": "sleep_disturbances",
+      "type": "disturbance"
+    },
+    {
+      "id": "5f",
+      "text": "f. 感觉冷",
+      "dimension": "sleep_disturbances",
+      "type": "disturbance"
+    },
+    {
+      "id": "5g",
+      "text": "g. 感觉热",
+      "dimension": "sleep_disturbances",
+      "type": "disturbance"
+    },
+    {
+      "id": "5h",
+      "text": "h. 做噩梦",
+      "dimension": "sleep_disturbances",
+      "type": "disturbance"
+    },
+    {
+      "id": "5i",
+      "text": "i. 疼痛不适",
+      "dimension": "sleep_disturbances",
+      "type": "disturbance"
+    },
+    {
+      "id": "5j",
+      "text": "j. 其他影响睡眠的事(请描述):",
+      "dimension": "sleep_disturbances",
+      "type": "disturbance"
+    },
+    {
+      "id": 6,
+      "text": "过去一个月你是否需要药物帮助睡眠(医生处方或 OTC)?",
+      "dimension": "sleep_medication",
+      "type": "frequency_4"
+    },
+    {
+      "id": 7,
+      "text": "过去一个月你在开车、吃饭、参加活动时是否难以保持清醒?",
+      "dimension": "daytime_dysfunction",
+      "type": "frequency_4"
+    },
+    {
+      "id": 8,
+      "text": "过去一个月你在完成事情上是否有困难(精力不足)?",
+      "dimension": "daytime_dysfunction",
+      "type": "frequency_4"
+    },
+    {
+      "id": 9,
+      "text": "过去一个月你对自己睡眠质量的总体评价",
+      "dimension": "subjective_sleep_quality",
+      "type": "rating_4"
+    }
+  ],
+  "components": {
+    "C1_subjective_sleep_quality": {
+      "label": "主观睡眠质量",
+      "source_item": 9,
+      "score_range": [0, 3],
+      "options": [
+        {"value": 0, "label": "很好"},
+        {"value": 1, "label": "较好"},
+        {"value": 2, "label": "较差"},
+        {"value": 3, "label": "很差"}
+      ]
+    },
+    "C2_sleep_latency": {
+      "label": "入睡潜伏期",
+      "source_items": [2, "5a"],
+      "score_range": [0, 3],
+      "formula": "(Q2_minutes_band + Q5a_frequency_band) -> sum_then_band",
+      "options": [
+        {"value": 0, "label": "0 分"},
+        {"value": 1, "label": "1-2 分"},
+        {"value": 2, "label": "3-4 分"},
+        {"value": 3, "label": "5-6 分"}
+      ]
+    },
+    "C3_sleep_duration": {
+      "label": "睡眠时长",
+      "source_item": 4,
+      "score_range": [0, 3],
+      "options": [
+        {"value": 0, "label": "> 7 小时"},
+        {"value": 1, "label": "6-7 小时"},
+        {"value": 2, "label": "5-6 小时"},
+        {"value": 3, "label": "< 5 小时"}
+      ]
+    },
+    "C4_habitual_sleep_efficiency": {
+      "label": "睡眠效率",
+      "source_items": [1, 3, 4],
+      "score_range": [0, 3],
+      "formula": "actual_sleep_hours / time_in_bed_hours * 100",
+      "options": [
+        {"value": 0, "label": "≥ 85%"},
+        {"value": 1, "label": "75-84%"},
+        {"value": 2, "label": "65-74%"},
+        {"value": 3, "label": "< 65%"}
+      ]
+    },
+    "C5_sleep_disturbances": {
+      "label": "睡眠干扰",
+      "source_items": ["5b", "5c", "5d", "5e", "5f", "5g", "5h", "5i", "5j"],
+      "score_range": [0, 3],
+      "formula": "sum(9 sub-items, each 0-3) -> band",
+      "options": [
+        {"value": 0, "label": "0 分"},
+        {"value": 1, "label": "1-9 分"},
+        {"value": 2, "label": "10-18 分"},
+        {"value": 3, "label": "19-27 分"}
+      ]
+    },
+    "C6_sleep_medication": {
+      "label": "催眠药物",
+      "source_item": 6,
+      "score_range": [0, 3],
+      "options": [
+        {"value": 0, "label": "无"},
+        {"value": 1, "label": "< 1 次/周"},
+        {"value": 2, "label": "1-2 次/周"},
+        {"value": 3, "label": "≥ 3 次/周"}
+      ]
+    },
+    "C7_daytime_dysfunction": {
+      "label": "日间功能",
+      "source_items": [7, 8],
+      "score_range": [0, 3],
+      "formula": "(Q7_band + Q8_band) -> sum_then_band",
+      "options": [
+        {"value": 0, "label": "0 分"},
+        {"value": 1, "label": "1-2 分"},
+        {"value": 2, "label": "3-4 分"},
+        {"value": 3, "label": "5-6 分"}
+      ]
+    }
+  },
+  "scoring": {
+    "options": [
+      {"value": 0, "label": "无"},
+      {"value": 1, "label": "轻度"},
+      {"value": 2, "label": "中度"},
+      {"value": 3, "label": "重度"}
+    ],
+    "range": [0, 21],
+    "method": "component_sum",
+    "item_count": 19,
+    "component_count": 7,
+    "reverse_items": [],
+    "reverse_formula": null,
+    "calculation_note": "总分 = C1 + C2 + C3 + C4 + C5 + C6 + C7,7 个维度各 0-3 分累加,总分 0-21。Phase 1 测评引擎需先按 components 段计 7 维度分,再求和得总分。"
+  },
+  "interpretation": [
+    {
+      "range": [0, 5],
+      "severity": "睡眠质量良好",
+      "label": "good_sleeper",
+      "color": "#10b981",
+      "description": "综合睡眠质量良好,7 个维度均处于可接受范围,无明显睡眠问题。",
+      "recommendation": "维持现有作息规律;持续监测睡眠-情绪关联,如有变化可复测。"
+    },
+    {
+      "range": [6, 10],
+      "severity": "睡眠质量一般",
+      "label": "moderate_problem",
+      "color": "#f59e0b",
+      "description": "存在轻度到中度睡眠问题,可能为短期压力或不良睡眠卫生习惯导致,需关注。",
+      "recommendation": "改善睡眠卫生:规律作息、睡前 1 小时避免电子屏幕、卧室仅用于睡眠;加强放松训练(4-7-8 呼吸/正念);持续 > 1 个月建议联动 ISI 评估失眠严重度。"
+    },
+    {
+      "range": [11, 15],
+      "severity": "睡眠质量较差",
+      "label": "severe_problem",
+      "color": "#f97316",
+      "description": "存在中度到重度睡眠问题,可能与情绪/躯体疾病相关,日间功能已受损。",
+      "recommendation": "建议寻求专业评估(精神科/睡眠专科);首选 CBT-I(认知行为治疗);强烈建议联动 PHQ-9 / GAD-7 评估焦虑抑郁共病。"
+    },
+    {
+      "range": [16, 21],
+      "severity": "睡眠质量很差",
+      "label": "very_severe_problem",
+      "color": "#ef4444",
+      "description": "存在重度睡眠问题,7 个维度普遍受损,日常功能严重受影响,需立即干预。",
+      "recommendation": "立即就诊精神科/睡眠专科;强烈建议联动 PHQ-9 / GAD-7 / ISI 评估共病;评估是否需要药物 + CBT-I 联合干预;排查躯体疾病(甲亢/睡眠呼吸暂停/慢性疼痛等)。"
+    }
+  ],
+  "red_flags": {
+    "items": [],
+    "trigger_score_min": null,
+    "resources": [
+      {
+        "name": "全国心理援助热线",
+        "phone": "400-161-9995",
+        "hours": "24h"
+      },
+      {
+        "name": "北京心理危机研究与干预中心",
+        "phone": "010-82951332",
+        "hours": "24h"
+      }
+    ],
+    "action": "PSQI 本身不包含自伤红旗项;重度睡眠问题(总分 > 10)用户需联动 PHQ-9 / GAD-7 共病评估,持续监测情绪变化与睡眠-情绪双向影响;同时建议与 ISI 配套使用(ISI 测失眠严重度,PSQI 测综合睡眠质量)。"
+  },
+  "source": {
+    "original": "Buysse, D. J., Reynolds, C. F., Monk, T. H., Berman, S. R., & Kupfer, D. J. (1989). The Pittsburgh Sleep Quality Index: a new instrument for psychiatric practice and research. Psychiatry Research, 28(2), 193-213.",
+    "public_domain": true,
+    "license_note": "PSQI 为公共领域研究工具,使用无授权费;中文翻译采用刘贤臣等 1996 修订版(《中国临床心理学杂志》),信效度验证良好,分界值 5 分。"
+  },
+  "disclaimer": "PSQI 是综合睡眠质量评估工具,不是睡眠障碍的诊断工具。分数解读仅供个人参考,不能替代专业精神科/睡眠专科医生的评估与治疗方案;5 分仅作为睡眠质量良好/不良的统计学分界,非临床诊断阈值。",
+  "metadata": {
+    "created_at": "2026-09-01T03:30:00+08:00",
+    "created_by": "10-心理-Psychology 行业顾问",
+    "phase": "Phase 0 #2 #5",
+    "version": "0.1.0",
+    "status": "draft",
+    "next_step": "验证中文版翻译(刘贤臣 1996)→ 沿用此模板补 _index.json 把 PSQI 状态从 pending 改为 ready → 后续可加 components 自动计分脚本(Phase 1 测评引擎前置)"
+  }
+}
