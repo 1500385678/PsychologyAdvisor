@@ -1,0 +1,314 @@
+{
+  "$schema": "./concepts/_schema.json",
+  "schema_version": "0.1.0",
+  "schema_note": "Phase 0 辅助资产 #4 危机关键词表:Phase 1 危机检测模块(/crisis)埋点数据源;关键词按 6 大类组织(自杀意念/自伤行为/绝望无意义/冲动暴力/严重焦虑发作/物质滥用),共 89 词条,4 级 severity(critical/high/medium/low),low 留作扩展;严禁用于自动决策,只做安全网触发。",
+  "code": "CRISIS_KEYWORDS",
+  "name": "心理危机关键词检测表",
+  "name_en": "Crisis Keywords Dictionary",
+  "version": "0.1.0",
+  "updated_at": "2026-09-03",
+  "owner": "10-心理-Psychology",
+  "intro": "PsychologyAdvisor 危机检测埋点数据源。覆盖中文语境下 6 大类常见危机信号关键词(自杀意念/自伤行为/绝望无意义/冲动暴力/严重焦虑发作/物质滥用),共 89 词条。每条带 severity(4 级:critical/high/medium/low)与 response_action(立即资源弹窗/温和关切追问/记录观察/留作扩展)。**关键设计原则**:① 严守'只做安全网,不做诊断'边界,不引导细节、不替代专业咨询;② 触发即展示资源,不追问;③ 误报宽容(critical 优先级确保 high 不漏报);④ 所有命中记录脱敏入 crisis_events 表(无原始文本),用于后续评审与模型迭代。",
+  "design_principles": [
+    "只做安全网,不做诊断,不引导细节",
+    "触发即弹资源,不追问'你想怎么做'等危险对话",
+    "critical 级别宁可误报不漏报",
+    "所有命中脱敏记录(crisis_events 表存 trigger_keywords,不存原文)",
+    "任何升级/降级逻辑走人工 review,不在客户端自动判定"
+  ],
+  "severity_levels": {
+    "critical": {
+      "label": "立即介入",
+      "response_action": "show_emergency_resources",
+      "ui_pattern": "fullscreen_modal",
+      "max_typing_latency_ms": 200,
+      "description": "直接表达死亡意愿/计划/手段,或正在进行自伤,需立即弹出 24h 热线资源"
+    },
+    "high": {
+      "label": "强烈关切",
+      "response_action": "show_resources_and_empathy",
+      "ui_pattern": "persistent_banner",
+      "max_typing_latency_ms": 500,
+      "description": "存在自伤/自杀念头但未表达具体计划,或严重绝望,需温和资源推荐 + 情感支持"
+    },
+    "medium": {
+      "label": "温和关切",
+      "response_action": "log_and_soft_offer",
+      "ui_pattern": "inline_suggestion",
+      "max_typing_latency_ms": 1000,
+      "description": "高频风险信号(持续低落/失眠/孤立),不立即弹窗,记录观察 + 末尾柔和提供资源入口"
+    }
+  },
+  "keyword_categories": [
+    {
+      "id": "cat_suicidal_ideation",
+      "name": "自杀意念",
+      "name_en": "Suicidal Ideation",
+      "default_severity": "critical",
+      "description": "任何明确或模糊表达'想死/不想活/了结'的信号,均按 critical 处理(高敏感、宁误勿漏)",
+      "keywords": [
+        {"term": "想死", "severity": "critical", "note": "最常见口语化表达"},
+        {"term": "不想活", "severity": "critical", "note": "等价于想死,critical"},
+        {"term": "不想活了", "severity": "critical", "note": "加重语气,critical"},
+        {"term": "活够了", "severity": "high", "note": "口语化,可能非自伤但伴随绝望"},
+        {"term": "了结自己", "severity": "critical", "note": "明确自伤意图"},
+        {"term": "结束生命", "severity": "critical", "note": "明确自伤意图"},
+        {"term": "自杀", "severity": "critical", "note": "最直接表达"},
+        {"term": "轻生", "severity": "critical", "note": "口语化,但意图明确"},
+        {"term": "寻短见", "severity": "critical", "note": "口语化,意图明确"},
+        {"term": "一了百了", "severity": "high", "note": "可能为表达决心,也可能为情绪宣泄"},
+        {"term": "解脱", "severity": "high", "note": "与'想死'语境共现时升级,单独时降 medium"},
+        {"term": "消失", "severity": "medium", "note": "泛指,需结合上下文"},
+        {"term": "不存在的", "severity": "high", "note": "第三人称表达'想让自己不存在'"},
+        {"term": "希望自己没出生", "severity": "high", "note": "生命否定,常与抑郁共病"},
+        {"term": "不如死了算了", "severity": "critical", "note": "语气+意图双重信号"},
+        {"term": "我死了算了", "severity": "critical", "note": "第一人称+意图"},
+        {"term": "今晚就结束", "severity": "critical", "note": "含时间信号,极高危"},
+        {"term": "准备好了", "severity": "high", "note": "常与自杀计划共现(需结合上下文)"}
+      ]
+    },
+    {
+      "id": "cat_self_harm",
+      "name": "自伤行为",
+      "name_en": "Self-harm Behavior",
+      "default_severity": "critical",
+      "description": "正在进行或反复发生的自伤行为信号",
+      "keywords": [
+        {"term": "割腕", "severity": "critical", "note": "明确自伤行为"},
+        {"term": "割伤自己", "severity": "critical", "note": "明确自伤行为"},
+        {"term": "烫自己", "severity": "critical", "note": "明确自伤行为"},
+        {"term": "烧自己", "severity": "critical", "note": "明确自伤行为"},
+        {"term": "撞墙", "severity": "high", "note": "自伤/冲动行为"},
+        {"term": "打自己", "severity": "high", "note": "冲动行为"},
+        {"term": "扇自己", "severity": "medium", "note": "轻度自伤,需结合频率"},
+        {"term": "不吃不喝", "severity": "high", "note": "自伤/被动自毁"},
+        {"term": "绝食", "severity": "high", "note": "被动自伤"},
+        {"term": "过量吃药", "severity": "critical", "note": "明确自伤手段"},
+        {"term": "吞药", "severity": "critical", "note": "明确自伤手段(常与自杀意念共现)"},
+        {"term": "跳楼", "severity": "critical", "note": "明确自杀手段"},
+        {"term": "跳河", "severity": "critical", "note": "明确自杀手段"},
+        {"term": "上吊", "severity": "critical", "note": "明确自杀手段"},
+        {"term": "伤害自己", "severity": "critical", "note": "泛指自伤"},
+        {"term": "自残", "severity": "critical", "note": "最直接表达"}
+      ]
+    },
+    {
+      "id": "cat_hopelessness",
+      "name": "绝望与无意义感",
+      "name_en": "Hopelessness & Meaninglessness",
+      "default_severity": "high",
+      "description": "Beck 绝望量表核心维度,中度严重但常为前驱信号",
+      "keywords": [
+        {"term": "没意义", "severity": "high", "note": "存在主义核心绝望"},
+        {"term": "没有意义", "severity": "high", "note": "存在主义核心绝望"},
+        {"term": "活着没意思", "severity": "high", "note": "高度绝望,与自杀意念边缘"},
+        {"term": "没有意思", "severity": "medium", "note": "可能为日常表达,需结合频率"},
+        {"term": "没意思透了", "severity": "high", "note": "语气加重"},
+        {"term": "什么都做不了", "severity": "high", "note": "习得性无助"},
+        {"term": "改变不了", "severity": "medium", "note": "低自我效能"},
+        {"term": "没希望", "severity": "high", "note": "未来否定"},
+        {"term": "没有未来", "severity": "high", "note": "未来否定"},
+        {"term": "看不到希望", "severity": "high", "note": "时间维度绝望"},
+        {"term": "熬不下去了", "severity": "high", "note": "濒临崩溃表达"},
+        {"term": "撑不住", "severity": "high", "note": "承受力极限"},
+        {"term": "走投无路", "severity": "high", "note": "绝望+孤立"},
+        {"term": "没人能帮我", "severity": "high", "note": "求助无能感"},
+        {"term": "没人理解", "severity": "medium", "note": "孤立信号,需结合频率"},
+        {"term": "无人在乎", "severity": "high", "note": "价值感缺失+孤立"},
+        {"term": "废物", "severity": "medium", "note": "自我贬低,常与抑郁共病"},
+        {"term": "累赘", "severity": "high", "note": "自我价值感严重低下,自杀风险前驱"},
+        {"term": "不如别人", "severity": "low", "note": "日常比较,通常不触发弹窗(注:low 级别暂未启用,留作扩展)"},
+        {"term": "我好不了了", "severity": "high", "note": "病感+无望感"}
+      ]
+    },
+    {
+      "id": "cat_impulse_violence",
+      "name": "冲动与暴力倾向",
+      "name_en": "Impulse & Violence",
+      "default_severity": "high",
+      "description": "针对他人或自身的冲动/暴力信号,需温和关切 + 资源推荐",
+      "keywords": [
+        {"term": "想打人", "severity": "high", "note": "冲动信号"},
+        {"term": "想砸东西", "severity": "medium", "note": "冲动信号"},
+        {"term": "想杀他", "severity": "critical", "note": "针对他人的明确暴力意图,critical"},
+        {"term": "弄死他", "severity": "critical", "note": "明确暴力意图"},
+        {"term": "想报复", "severity": "high", "note": "暴力前驱"},
+        {"term": "同归于尽", "severity": "critical", "note": "扩大化自杀意念"},
+        {"term": "管不住自己", "severity": "high", "note": "失控感"},
+        {"term": "要爆发了", "severity": "high", "note": "临界状态"},
+        {"term": "快疯了", "severity": "medium", "note": "口语化,需结合上下文(可能为夸张表达)"},
+        {"term": "我要疯了", "severity": "medium", "note": "口语化,需结合上下文"},
+        {"term": "脑子要炸了", "severity": "medium", "note": "焦虑爆发信号"},
+        {"term": "受不了了", "severity": "medium", "note": "承受力极限,需结合上下文"}
+      ]
+    },
+    {
+      "id": "cat_severe_anxiety",
+      "name": "严重焦虑与惊恐发作",
+      "name_en": "Severe Anxiety / Panic Attack",
+      "default_severity": "medium",
+      "description": "高频或急性焦虑发作信号;部分与心血管症状共现时升级为 high",
+      "keywords": [
+        {"term": "惊恐发作", "severity": "high", "note": "明确临床表达"},
+        {"term": "panic", "severity": "high", "note": "英文+专业表达"},
+        {"term": "濒死感", "severity": "high", "note": "惊恐核心症状"},
+        {"term": "要死了", "severity": "high", "note": "惊恐发作时口语化(注:与自杀语境区分,需结合上下文)"},
+        {"term": "喘不上气", "severity": "medium", "note": "急性焦虑"},
+        {"term": "心慌得厉害", "severity": "medium", "note": "急性焦虑"},
+        {"term": "发抖", "severity": "low", "note": "可能为日常紧张,留作扩展"},
+        {"term": "全身发麻", "severity": "medium", "note": "惊恐发作躯体化"},
+        {"term": "害怕出门", "severity": "medium", "note": "广场恐惧信号"},
+        {"term": "怕死", "severity": "medium", "note": "健康焦虑/惊恐"},
+        {"term": "失控感", "severity": "medium", "note": "焦虑核心信号"},
+        {"term": "脑子停不下来", "severity": "medium", "note": "GAD-7 高分信号"},
+        {"term": "失眠一个多月了", "severity": "medium", "note": "慢性失眠,需结合 ISI 测评"}
+      ]
+    },
+    {
+      "id": "cat_substance_abuse",
+      "name": "物质滥用与依赖",
+      "name_en": "Substance Abuse",
+      "default_severity": "high",
+      "description": "酒精/药物滥用信号,与自杀风险共病率高",
+      "keywords": [
+        {"term": "喝了很多酒", "severity": "high", "note": "急性酒精过量"},
+        {"term": "喝醉了", "severity": "medium", "note": "需结合频率"},
+        {"term": "借酒消愁", "severity": "medium", "note": "情绪性饮酒"},
+        {"term": "戒不掉", "severity": "high", "note": "依赖信号"},
+        {"term": "嗑药", "severity": "high", "note": "物质滥用"},
+        {"term": "吃安眠药", "severity": "high", "note": "需结合剂量与意图"},
+        {"term": "吃了半瓶", "severity": "critical", "note": "明确过量,与自杀边缘"},
+        {"term": "喝酒想忘", "severity": "high", "note": "情绪性饮酒+逃避"},
+        {"term": "用酒精麻痹", "severity": "high", "note": "明确滥用"},
+        {"term": "抽烟缓解", "severity": "low", "note": "日常应对,通常不触发弹窗,留作扩展"}
+      ]
+    }
+  ],
+  "response_templates": {
+    "critical": {
+      "title": "你不必独自面对",
+      "body": "如果你正在经历非常痛苦的想法,请立即联系专业人员。我们整理了 24 小时可用的求助资源,随时都在。",
+      "primary_action": {
+        "label": "拨打 24h 心理援助热线",
+        "phone": "400-161-9995",
+        "phone_label": "400-161-9995(北京心理危机研究与干预中心)"
+      },
+      "secondary_actions": [
+        {"label": "查看所有危机资源", "route": "/crisis/resources"},
+        {"label": "联系信任的人", "note": "家人、朋友、老师都可以"}
+      ],
+      "tone": "warm, direct, no questions about details"
+    },
+    "high": {
+      "title": "我们注意到你最近的感受",
+      "body": "听起来你正在经历一段很难的时光。专业支持可以帮到你,以下是一些可以参考的资源。",
+      "primary_action": {
+        "label": "查看心理支持资源",
+        "route": "/crisis/resources"
+      },
+      "secondary_actions": [
+        {"label": "继续对话", "note": "我们在这里,可以继续聊"}
+      ],
+      "tone": "empathetic, gentle, resource-first"
+    },
+    "medium": {
+      "title": null,
+      "body": null,
+      "primary_action": null,
+      "secondary_actions": [
+        {"label": "如果你想聊聊", "route": "/crisis/resources", "note": "随时可以找到支持资源"}
+      ],
+      "tone": "soft inline suggestion, no interruption"
+    }
+  },
+  "hotlines_zh_cn": [
+    {
+      "name": "北京心理危机研究与干预中心",
+      "phone": "400-161-9995",
+      "hours": "24h",
+      "coverage": "全国",
+      "language": "中文",
+      "note": "国家卫健委认证,危机干预首选"
+    },
+    {
+      "name": "全国心理援助热线",
+      "phone": "12320-5",
+      "hours": "24h",
+      "coverage": "全国",
+      "language": "中文",
+      "note": "卫健委公益热线"
+    },
+    {
+      "name": "希望 24 热线",
+      "phone": "400-161-9995",
+      "hours": "24h",
+      "coverage": "全国",
+      "language": "中文",
+      "note": "同上,备援"
+    },
+    {
+      "name": "生命热线",
+      "phone": "400-821-1215",
+      "hours": "24h",
+      "coverage": "全国",
+      "language": "中文",
+      "note": "上海心理危机干预中心"
+    },
+    {
+      "name": "北京回龙观医院心理危机干预热线",
+      "phone": "010-82951332",
+      "hours": "24h",
+      "coverage": "全国",
+      "language": "中文",
+      "note": "精神专科医院,适合精神症状共病"
+    }
+  ],
+  "matching_rules": {
+    "algorithm": "exact_substring + jieba_token_fallback",
+    "case_sensitive": false,
+    "whole_word": false,
+    "negation_window_chars": 6,
+    "negation_words": ["不是", "不会", "别", "没有", "不"],
+    "context_window_chars": 50,
+    "co_occurrence_upgrade": "若同一输入中同时出现 cat_suicidal_ideation 与 cat_hopelessness 任一 high 词,整体升级为 critical",
+    "performance_budget_ms": 50,
+    "debounce_ms": 800,
+    "max_keystrokes_per_minute": 240
+  },
+  "audit_and_logging": {
+    "log_storage": "data/crisis_events (Phase 1 后端建表,字段:user_id, trigger_keywords, severity, resources_shown, created_at)",
+    "log_pii_policy": "DO NOT store original user text; store only matched keyword list + severity",
+    "review_cadence": "weekly by psychology consultant (10-心理-Psychology)",
+    "false_positive_review_threshold": "若某词 30 日内 false positive 率 > 70%,触发 downgrade review",
+    "false_negative_review_threshold": "若收到 1 例已知漏报,立即全表 review 该 category 全部词"
+  },
+  "expansion_policy": {
+    "add_new_keyword_workflow": "1. 由 10-心理-Psychology 顾问在周报中提议;2. 评估语境(常用 / 边缘 / 罕见);3. 设定 severity;4. 入 _index.json 同版本号;5. 入 git 走 PR review",
+    "deprecation_policy": "若某词 90 日未触发,标记 dormant,不移除(保留供未来模型训练)",
+    "language_support_roadmap": "v0.1.x 中文简体,v0.2.x 增加英文,v0.3.x 增加繁体/粤语"
+  },
+  "stats": {
+    "total_keywords": 89,
+    "by_severity": {"critical": 26, "high": 39, "medium": 21, "low": 3, "_note": "low 当前不触发,留作扩展;critical+high 共 65 条"},
+    "by_category": {
+      "cat_suicidal_ideation": 18,
+      "cat_self_harm": 16,
+      "cat_hopelessness": 20,
+      "cat_impulse_violence": 12,
+      "cat_severe_anxiety": 13,
+      "cat_substance_abuse": 10
+    }
+  },
+  "related": {
+    "schema_ref": "./concepts/_schema.json",
+    "scales_index_ref": "./scales/_index.json",
+    "phq9_crisis_flag_ref": "./scales/phq9.json#red_flags",
+    "phase_0_roadmap": "Phase 0 辅助资产 #4 完成;剩余:#3 情绪标签字典(0904 T3) / #5 资源导航(0905 T3)",
+    "phase_1_consumers": [
+      "/crisis 检测 API(后端服务层)",
+      "Web App 情绪记录输入框实时监测",
+      "Web App 测评页 post-test 反馈(若 PHQ-9 第 9 题 ≥ 1 联动 critical)",
+      "飞书 Bot 任意对话输入监测"
+    ]
+  }
+}
