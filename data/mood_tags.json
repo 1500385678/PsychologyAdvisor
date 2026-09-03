@@ -1,0 +1,242 @@
+{
+  "$schema": "./concepts/_schema.json",
+  "schema_version": "0.1.0",
+  "schema_note": "Phase 0 辅助资产 #3 情绪打卡标签字典:Phase 1 情绪打卡页(/mood-log)滑动条 + 多标签选择器数据源;按效价(valence)分正/负两大类共 11 个子分类 60 标签(正 5 子类 30 标签 / 负 6 子类 30 标签),每条 3 级强度(mild/medium/strong);只命名情绪不做诊断;不替代量表;不直接触发危机检测,与 crisis_keywords 明确划界(危机检测仅作用于自由文本输入框)。",
+  "code": "MOOD_TAGS",
+  "name": "情绪打卡标签字典",
+  "name_en": "Mood Tag Dictionary",
+  "version": "0.1.0",
+  "updated_at": "2026-09-04",
+  "owner": "10-心理-Psychology",
+  "intro": "PsychologyAdvisor 情绪打卡页标签选择器数据源。覆盖日常情绪表达 60 个标签(积极 30 / 消极 30),按效价(valence)分正/负两大组,正向下设 5 个子分类(喜悦满足/平静放松/活力动力/连接温暖/自信成就),负向下设 6 个子分类(低落悲伤/焦虑担忧/愤怒烦躁/疲惫无力/孤独疏离/压力过载),共 11 个子分类,每条标签带强度(3 级 mild/medium/strong),供滑动条 + 多标签 UI 直接渲染。**关键设计原则**:① 只命名情绪不诊断,标签不是症状;② 正负均衡避免负向偏倚(60 标签对半开);③ 强度用于 UI 自适应(强 → 软提示量表入口);④ 不替代量表(抑郁/焦虑/失眠/压力用 4 份自评量表做专业评估);⑤ 不与 crisis_keywords 直接联动,危机检测仅作用于自由文本输入框,避免打卡被危机弹窗污染。",
+  "design_principles": [
+    "只命名情绪,不做诊断,标签不是症状",
+    "正负各 30 标签均衡分布,避免负向偏倚(临床易过度关注负向)",
+    "强度 3 级(mild/medium/strong)用于 UI 自适应展示(浅/中/深色)和量表软提示触发",
+    "不替代量表,抑郁/焦虑/压力/失眠需 PHQ-9 / GAD-7 / PSS / ISI / PSQI 5 份专业评估",
+    "不与 crisis_keywords 直接联动,危机检测仅作用于自由文本输入框,避免打卡被危机弹窗污染"
+  ],
+  "valence_levels": {
+    "positive": {
+      "label": "积极情绪",
+      "ui_color_hint": "warm",
+      "default_intensity_display": "1_mild",
+      "description": "向好、舒展、有能量的情绪状态;正面感受占主导"
+    },
+    "negative": {
+      "label": "消极情绪",
+      "ui_color_hint": "cool",
+      "default_intensity_display": "1_mild",
+      "description": "压抑、消耗、负担的情绪状态;正常范围内偶有,持续高频需关注"
+    }
+  },
+  "intensity_levels": {
+    "1_mild": {
+      "label": "轻微",
+      "score": 1,
+      "ui_color_depth": "light",
+      "description": "淡淡存在,不影响日常;多见于日常波动"
+    },
+    "2_medium": {
+      "label": "中等",
+      "score": 2,
+      "ui_color_depth": "medium",
+      "description": "明确感受到,需主动调节;持续 1-2 周需自我关注"
+    },
+    "3_strong": {
+      "label": "强烈",
+      "score": 3,
+      "ui_color_depth": "deep",
+      "description": "主导情绪,难以忽略;持续 2 周以上建议做对应量表评估"
+    }
+  },
+  "tag_categories": [
+    {
+      "id": "pos_joy",
+      "valence": "positive",
+      "name": "喜悦与满足",
+      "name_en": "Joy & Satisfaction",
+      "description": "正向情感满足感,生活小事带来的愉悦体验",
+      "tags": [
+        {"term": "开心", "intensity": "1_mild", "note": "通用轻量表达,儿童到成人通用"},
+        {"term": "愉悦", "intensity": "1_mild", "note": "稍偏书面,可与'开心'互换"},
+        {"term": "满足", "intensity": "2_medium", "note": "偏回顾性,达成目标后"},
+        {"term": "幸福", "intensity": "3_strong", "note": "深层满足,持续感强"},
+        {"term": "欣喜", "intensity": "2_medium", "note": "惊喜场景下的愉悦"},
+        {"term": "愉快", "intensity": "1_mild", "note": "日常温和的正向体验"},
+        {"term": "惬意", "intensity": "2_medium", "note": "舒适自在,环境/关系和谐时"},
+        {"term": "感恩", "intensity": "2_medium", "note": "与他者/命运相关,具连接感"}
+      ]
+    },
+    {
+      "id": "pos_calm",
+      "valence": "positive",
+      "name": "平静与放松",
+      "name_en": "Calm & Relaxed",
+      "description": "情绪平稳,无显著波动;适合静态活动/休息场景",
+      "tags": [
+        {"term": "平静", "intensity": "2_medium", "note": "中性平稳,无强烈情绪"},
+        {"term": "放松", "intensity": "1_mild", "note": "身体与心理双重放松"},
+        {"term": "安心", "intensity": "2_medium", "note": "安全感充足,无威胁感知"},
+        {"term": "宁静", "intensity": "2_medium", "note": "更深层平静,常与自然/独处相关"},
+        {"term": "淡定", "intensity": "2_medium", "note": "面对压力仍从容"},
+        {"term": "从容", "intensity": "2_medium", "note": "节奏自控,无慌乱"},
+        {"term": "释然", "intensity": "3_strong", "note": "放下执着后的深层平静,常含转变"}
+      ]
+    },
+    {
+      "id": "pos_energy",
+      "valence": "positive",
+      "name": "活力与动力",
+      "name_en": "Energy & Motivation",
+      "description": "身体或心理能量充沛,有完成任务的驱动力",
+      "tags": [
+        {"term": "充满活力", "intensity": "3_strong", "note": "身心能量双重充沛"},
+        {"term": "精力充沛", "intensity": "3_strong", "note": "偏身体能量,任务驱动明显"},
+        {"term": "振奋", "intensity": "3_strong", "note": "受事件激发的高能量状态"},
+        {"term": "兴奋", "intensity": "3_strong", "note": "高唤起积极情绪,接近激动"},
+        {"term": "专注", "intensity": "2_medium", "note": "心流状态,工作/学习深度投入"},
+        {"term": "有动力", "intensity": "2_medium", "note": "目标明确,行动意愿强"},
+        {"term": "积极", "intensity": "2_medium", "note": "整体心态正向,泛化积极"}
+      ]
+    },
+    {
+      "id": "pos_connection",
+      "valence": "positive",
+      "name": "连接与温暖",
+      "name_en": "Connection & Warmth",
+      "description": "与他人的情感连接、亲密感与归属感",
+      "tags": [
+        {"term": "被爱", "intensity": "3_strong", "note": "感受到明确的爱与被接纳"},
+        {"term": "温暖", "intensity": "2_medium", "note": "情感氛围柔和,常与场景相关"},
+        {"term": "亲密", "intensity": "3_strong", "note": "深层关系连接,信任与被理解"},
+        {"term": "归属", "intensity": "2_medium", "note": "群体/家庭/团队中的位置感"}
+      ]
+    },
+    {
+      "id": "pos_confidence",
+      "valence": "positive",
+      "name": "自信与成就",
+      "name_en": "Confidence & Achievement",
+      "description": "自我效能感与任务完成带来的价值感",
+      "tags": [
+        {"term": "自豪", "intensity": "3_strong", "note": "对自身/他人成就的肯定"},
+        {"term": "自信", "intensity": "2_medium", "note": "对能力/判断的稳定信任"},
+        {"term": "有成就感", "intensity": "3_strong", "note": "完成重要任务后的明确价值感"},
+        {"term": "踏实", "intensity": "2_medium", "note": "稳定扎实,常与持续努力相关"}
+      ]
+    },
+    {
+      "id": "neg_sad",
+      "valence": "negative",
+      "name": "低落与悲伤",
+      "name_en": "Sadness & Low Mood",
+      "description": "情绪低落、悲伤,失去兴趣或动力;高频持续 2 周以上建议做 PHQ-9 评估",
+      "tags": [
+        {"term": "难过", "intensity": "1_mild", "note": "轻度情绪低落,可由具体事件触发"},
+        {"term": "伤心", "intensity": "2_medium", "note": "明确痛苦感,常与人际/丧失相关"},
+        {"term": "沮丧", "intensity": "2_medium", "note": "挫败感叠加,无明确希望感"},
+        {"term": "失落", "intensity": "2_medium", "note": "期待落空,空缺感"},
+        {"term": "悲伤", "intensity": "3_strong", "note": "深层哀伤,常与丧失/告别相关"},
+        {"term": "委屈", "intensity": "2_medium", "note": "不被理解/不公对待后的复合情绪"},
+        {"term": "想哭", "intensity": "2_medium", "note": "情绪累积,需释放信号"},
+        {"term": "无助", "intensity": "3_strong", "note": "感到无力改变现状,需关注"}
+      ]
+    },
+    {
+      "id": "neg_anxious",
+      "valence": "negative",
+      "name": "焦虑与担忧",
+      "name_en": "Anxiety & Worry",
+      "description": "对未来/不确定性的担忧与紧张;高频持续 2 周以上建议做 GAD-7 评估",
+      "tags": [
+        {"term": "焦虑", "intensity": "2_medium", "note": "对未来/不确定的泛化担忧"},
+        {"term": "紧张", "intensity": "1_mild", "note": "事件前短暂唤起,如面试/演讲"},
+        {"term": "担忧", "intensity": "1_mild", "note": "轻度思虑,具体对象明确"},
+        {"term": "不安", "intensity": "2_medium", "note": "无具体对象的模糊不安全感"},
+        {"term": "心慌", "intensity": "3_strong", "note": "躯体化焦虑,心跳/胸闷明显"},
+        {"term": "害怕", "intensity": "3_strong", "note": "对具体威胁的明确恐惧"},
+        {"term": "惶恐", "intensity": "3_strong", "note": "强烈不安,接近惊恐发作阈值"}
+      ]
+    },
+    {
+      "id": "neg_angry",
+      "valence": "negative",
+      "name": "愤怒与烦躁",
+      "name_en": "Anger & Irritability",
+      "description": "愤怒、易激惹或内心烦躁;持续高频注意情绪调节资源",
+      "tags": [
+        {"term": "愤怒", "intensity": "2_medium", "note": "明确愤怒,有具体对象"},
+        {"term": "烦躁", "intensity": "1_mild", "note": "轻度易激惹,日常可观察"},
+        {"term": "易怒", "intensity": "2_medium", "note": "触发阈值降低,小事也生气"},
+        {"term": "恼火", "intensity": "2_medium", "note": "具体事件触发的不满"},
+        {"term": "愤懑", "intensity": "3_strong", "note": "压抑累积的深层愤怒,需释放"}
+      ]
+    },
+    {
+      "id": "neg_exhausted",
+      "valence": "negative",
+      "name": "疲惫与无力",
+      "name_en": "Fatigue & Powerlessness",
+      "description": "身心能量耗竭,难以启动任务;持续 1 个月以上建议做 PSS + ISI 评估",
+      "tags": [
+        {"term": "疲惫", "intensity": "1_mild", "note": "日常劳累,休息可恢复"},
+        {"term": "倦怠", "intensity": "2_medium", "note": "持续消耗,休息难以恢复"},
+        {"term": "无力", "intensity": "2_medium", "note": "能量低,行动意愿弱"},
+        {"term": "累", "intensity": "1_mild", "note": "口语化通用表达"},
+        {"term": "耗竭", "intensity": "3_strong", "note": "身心双重耗竭,接近 burnout 临界"}
+      ]
+    },
+    {
+      "id": "neg_lonely",
+      "valence": "negative",
+      "name": "孤独与疏离",
+      "name_en": "Loneliness & Alienation",
+      "description": "缺乏连接感、被孤立或不被理解;高频需关注社会支持系统",
+      "tags": [
+        {"term": "孤独", "intensity": "2_medium", "note": "独处状态下的情感空虚感"},
+        {"term": "寂寞", "intensity": "2_medium", "note": "渴望连接但缺少对象"},
+        {"term": "被孤立", "intensity": "3_strong", "note": "明确被群体/关系排斥感"}
+      ]
+    },
+    {
+      "id": "neg_overwhelmed",
+      "valence": "negative",
+      "name": "压力与过载",
+      "name_en": "Stress & Overload",
+      "description": "任务/责任超出应对能力;高频持续建议做 PSS 评估",
+      "tags": [
+        {"term": "压力大", "intensity": "2_medium", "note": "泛化压力,多源累积"},
+        {"term": "喘不过气", "intensity": "3_strong", "note": "明确过载,需立即减压"}
+      ]
+    }
+  ],
+  "stats": {
+    "total_tags": 60,
+    "positive": 30,
+    "negative": 30,
+    "valences": 2,
+    "subcategory_count": 11,
+    "positive_subcategories": ["pos_joy", "pos_calm", "pos_energy", "pos_connection", "pos_confidence"],
+    "negative_subcategories": ["neg_sad", "neg_anxious", "neg_angry", "neg_exhausted", "neg_lonely", "neg_overwhelmed"],
+    "intensity_distribution": {
+      "1_mild": 10,
+      "2_medium": 31,
+      "3_strong": 19
+    }
+  },
+  "pairing_rules": {
+    "scale_soft_suggestion": "neg_* + strong + 频次 ≥ 3次/周 → 14 天窗口 → 推送对应量表软提示(非强制):neg_sad→PHQ-9 / neg_anxious→GAD-7 / neg_exhausted→PSS+ISI / neg_lonely→社会支持资源卡。**不阻断流程,不强制测评**。",
+    "crisis_keywords_boundary": "打卡标签不直接触发 crisis_keywords,危机检测仅作用于'自由文本输入框'(日记/留言/倾诉场景),避免打卡被误判为危机事件。**设计原则**:情绪命名 ≠ 危机信号,二者走两套独立通道。",
+    "intensity_display_rule": "强度 → UI 颜色深度(1=浅/2=中/3=深);同效价同子类内,3 个强度都需至少 1 个标签,保证选择器内分布均匀。",
+    "tag_combination_max": "单次打卡最多选 3 个标签(避免标签刷屏;典型用户单次选择 1-2 个),UI 强提示'最多 3 个'。",
+    "mood_log_data_shape": "前端 payload 建议: { user_id, log_date, valence_score: 1-5 滑动条, tags: [{term, intensity, category_id}], note: 自由文本(可选, ≤200字) }。valence_score 滑动条与 tags 互补,前者快记,后者精细。",
+    "aggregation_view_hint": "周报/月报:按 category_id 聚合 → 看哪类情绪最频繁;按 intensity 趋势 → 看是否升级;与 crisis_events 严格分表存。"
+  },
+  "related": {
+    "schema_ref": "./concepts/_schema.json",
+    "crisis_keywords_ref": "data/crisis_keywords.json (v0.1.0, 89 词条, 6 类别, 0903 T3 ready) — 危机检测数据源,与 mood_tags 独立通道,不联动",
+    "scales_index_ref": "data/scales/_index.json (v0.1.5, 5 量表 ready) — 量表软提示数据源",
+    "phase_0_roadmap": "Phase 0 量表 5/5=100% + 危机词表 ready(0903) + 情绪标签 ready(0904) + 资源导航待建(0905) → Phase 1 启动"
+  }
+}
