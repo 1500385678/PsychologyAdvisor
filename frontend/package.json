@@ -1,0 +1,19 @@
+{
+  "name": "psychology-advisor-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "心理顾问 · Web App 前端骨架(Phase 1 起步占位,2026-09-09 T3 立)",
+  "type": "module",
+  "scripts": {
+    "dev": "python3 -m http.server 5173 --bind 127.0.0.1",
+    "start": "python3 -m http.server 5173 --bind 127.0.0.1"
+  },
+  "keywords": [
+    "psychology",
+    "phase-1",
+    "frontend",
+    "skeleton"
+  ],
+  "author": "10-心理-Psychology 顾问",
+  "license": "UNLICENSED"
+}
