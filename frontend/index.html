@@ -4,17 +4,109 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>心理顾问 · Web App</title>
-    <meta name="description" content="心理顾问 Web App 骨架占位 · 2026-09-09 T3 立 · Phase 1 起步" />
+    <meta name="description" content="心理顾问 Web App · Phase 1 测评页(2026-09-10 T3 立)" />
+    <style>
+      :root {
+        --psy-bg: #fafaf7;
+        --psy-fg: #1f2937;
+        --psy-muted: #6b7280;
+        --psy-accent: #0f766e;
+        --psy-warn: #b91c1c;
+        --psy-card-bg: #ffffff;
+        --psy-border: #e5e7eb;
+      }
+      * { box-sizing: border-box; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+          "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        margin: 0;
+        background: var(--psy-bg);
+        color: var(--psy-fg);
+        line-height: 1.55;
+      }
+      header.psy-header {
+        padding: 20px 24px;
+        background: #fff;
+        border-bottom: 1px solid var(--psy-border);
+        display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
+      }
+      header.psy-header h1 { margin: 0; font-size: 20px; }
+      header.psy-header .psy-tag { color: var(--psy-muted); font-size: 13px; }
+      nav.psy-nav a {
+        margin-right: 12px; color: var(--psy-accent); text-decoration: none;
+        font-size: 14px;
+      }
+      nav.psy-nav a:hover { text-decoration: underline; }
+      main#app { max-width: 880px; margin: 24px auto; padding: 0 20px; }
+      #view { background: var(--psy-card-bg); border: 1px solid var(--psy-border);
+        border-radius: 8px; padding: 24px; min-height: 240px; }
+      h2 { margin-top: 0; }
+      .psy-hint { color: var(--psy-muted); font-size: 14px; }
+      .psy-loading, .psy-error { color: var(--psy-muted); }
+      .psy-error { color: var(--psy-warn); }
+      .psy-grid {
+        display: grid; gap: 16px; margin-top: 16px;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      }
+      .psy-card {
+        border: 1px solid var(--psy-border); border-radius: 8px; padding: 16px;
+        background: #fff;
+      }
+      .psy-card header { display: flex; justify-content: space-between; gap: 8px; }
+      .psy-card h3 { margin: 0; font-size: 16px; }
+      .psy-card small { color: var(--psy-muted); font-weight: normal; }
+      .psy-tag {
+        font-size: 12px; padding: 2px 8px; border-radius: 12px;
+        background: #ecfdf5; color: var(--psy-accent); white-space: nowrap;
+      }
+      .psy-meta { color: var(--psy-muted); font-size: 13px; margin: 8px 0 12px; }
+      .psy-warn { color: var(--psy-warn); }
+      .psy-btn {
+        display: inline-block; padding: 8px 16px; border-radius: 6px;
+        border: 1px solid var(--psy-accent); background: #fff; color: var(--psy-accent);
+        cursor: pointer; font-size: 14px;
+      }
+      .psy-btn:hover { background: #f0fdfa; }
+      .psy-btn-primary { background: var(--psy-accent); color: #fff; }
+      .psy-btn-primary:hover { background: #0d9488; }
+      .psy-items { list-style: none; padding: 0; }
+      .psy-item {
+        padding: 12px 0; border-bottom: 1px dashed var(--psy-border);
+      }
+      .psy-qid { font-weight: 600; margin-right: 6px; }
+      .psy-opts { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 12px; }
+      .psy-opt { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; }
+      .psy-actions { margin-top: 20px; }
+      .psy-band {
+        background: #f9fafb; border-radius: 6px; padding: 12px 16px; margin: 16px 0;
+      }
+      .psy-band h3 { margin: 0 0 6px; }
+      .psy-score { font-size: 18px; }
+      .psy-score strong { color: var(--psy-accent); font-size: 24px; }
+      .psy-warn-box {
+        background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px;
+        padding: 12px 16px; margin: 16px 0; color: #7f1d1d;
+      }
+      .psy-disclaimer {
+        margin-top: 20px; padding: 12px; background: #fffbeb;
+        border-left: 3px solid #f59e0b; font-size: 13px; color: #78350f;
+      }
+      .psy-breakdown { font-size: 14px; color: var(--psy-muted); }
+      details summary { cursor: pointer; color: var(--psy-accent); margin-top: 12px; }
+    </style>
   </head>
   <body>
-    <main id="app">
+    <header class="psy-header">
       <h1>心理顾问 · Web App</h1>
-      <p>这是 Phase 1 Web App 骨架占位(2026-09-09 T3 立)。</p>
-      <p>当前轮仅交付最小可加载 HTML + 占位 JS,不实现任何业务模块。</p>
-      <ul>
-        <li>首页 / 情绪日历 / 测评 / 科普列表 → 后续 commit 补</li>
-        <li>危机检测埋点 / 飞书 OAuth / Docker Compose → 后续 commit 补</li>
-      </ul>
+      <span class="psy-tag">Phase 1 · 测评页(0910 T3)</span>
+      <nav class="psy-nav">
+        <a href="#/scales">测评</a>
+      </nav>
+    </header>
+    <main id="app">
+      <section id="view">
+        <p class="psy-loading">页面加载中…</p>
+      </section>
     </main>
     <script type="module" src="./src/main.js"></script>
   </body>
