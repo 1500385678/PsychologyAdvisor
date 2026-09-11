@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>心理顾问 · Web App</title>
-    <meta name="description" content="心理顾问 Web App · Phase 1 测评页(0910) + 情绪打卡页(0911)" />
+    <meta name="description" content="心理顾问 Web App · Phase 1 测评页(0910) + 情绪打卡页(0911) + 情绪日历(0912)" />
     <style>
       :root {
         --psy-bg: #fafaf7;
@@ -133,14 +133,78 @@
         font-size: 12px; background: #e5e7eb; color: #1f2937; margin-right: 4px;
       }
       .psy-muted { color: var(--psy-muted); }
+
+      /* 情绪日历视图(Phase 1 #3 · 0912 T3) */
+      .psy-calendar { max-width: 880px; }
+      .psy-calendar-head h2 { margin: 0 0 4px; }
+      .psy-calendar-nav {
+        display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+        margin: 12px 0 4px;
+      }
+      .psy-calendar-title {
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        font-size: 13px; color: var(--psy-fg); background: #f3f4f6;
+        padding: 4px 10px; border-radius: 4px;
+      }
+      .psy-calendar-stats {
+        display: flex; flex-wrap: wrap; gap: 16px; margin: 8px 0 16px;
+        font-size: 14px; color: var(--psy-fg);
+        background: #f9fafb; padding: 10px 14px; border-radius: 6px;
+      }
+      .psy-calendar-stats strong { color: var(--psy-accent); }
+      .psy-sparkline-wrap {
+        background: #fff; border: 1px solid var(--psy-border);
+        border-radius: 6px; padding: 12px; margin: 8px 0 4px;
+      }
+      .psy-sparkline { display: block; width: 100%; height: 120px; }
+      .psy-legend {
+        display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px;
+        color: var(--psy-muted); margin: 4px 0 16px;
+      }
+      .psy-legend-item { display: inline-flex; align-items: center; gap: 4px; }
+      .psy-legend-dot {
+        display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+      }
+      .psy-day-grid {
+        display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;
+        margin: 8px 0 16px;
+      }
+      .psy-day-cell {
+        --cell-fill: transparent;
+        display: flex; flex-direction: column; align-items: center;
+        justify-content: center; min-height: 64px;
+        background: var(--cell-fill); color: #1f2937;
+        border-radius: 6px; text-decoration: none; padding: 4px;
+        position: relative; font-size: 12px;
+      }
+      .psy-day-cell.has-data { color: #fff; }
+      .psy-day-cell:not(.has-data) { background: #f3f4f6; }
+      .psy-day-num { font-weight: 600; font-size: 14px; }
+      .psy-day-count {
+        position: absolute; top: 2px; right: 4px;
+        background: rgba(255,255,255,.85); color: #1f2937;
+        font-size: 10px; padding: 0 4px; border-radius: 8px;
+      }
+      .psy-day-avg { font-size: 10px; opacity: .85; margin-top: 2px; }
+      .psy-day-cell.is-today { outline: 2px solid var(--psy-accent); outline-offset: 2px; }
+      .psy-day-cell:hover { transform: scale(1.04); }
+      .psy-tag-cloud {
+        display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px;
+        margin: 8px 0 16px; padding: 12px; background: #f9fafb;
+        border-radius: 6px; min-height: 60px;
+      }
+      .psy-tag-cloud-item { line-height: 1.2; }
+      .psy-tag-cloud-item small { color: var(--psy-muted); font-size: 10px; margin-left: 2px; }
+      .psy-day-detail { max-width: 720px; }
     </style>
   </head>
   <body>
     <header class="psy-header">
       <h1>心理顾问 · Web App</h1>
-      <span class="psy-tag">Phase 1 · 测评 + 打卡(0910 + 0911)</span>
+      <span class="psy-tag">Phase 1 · 测评 + 打卡 + 日历(0910 + 0911 + 0912)</span>
       <nav class="psy-nav">
         <a href="#/checkin">情绪打卡</a>
+        <a href="#/calendar">情绪日历</a>
         <a href="#/scales">测评</a>
       </nav>
     </header>
