@@ -1,5 +1,6 @@
 // 心理顾问 · 情绪打卡页业务模块
 // 2026-09-11 T3 立 · Phase 1 #2 "情绪打卡页"(滑动条 + 标签 + 文字)
+// 2026-09-15 T3 接入 Phase 1 #6 '危机检测埋点'(替换 0911 起的 inline warn-box,升级为多级严重程度 + 资源弹窗)
 // 0 依赖 · 纯 ES Module · 数据源: data/mood_tags.json(Phase 0 资产 · 11 子类 / 60 标签)
 //
 // 视图:
@@ -20,13 +21,14 @@
 //   滑动条 1-5(0=未选,1=很差,5=很好);1-2 偏负向,3 中性,4-5 偏正向
 
 import { escapeHtml, navigate } from "./router.js";
+import { attachCrisisMonitor } from "./crisis_monitor.js";
 
 // ---------------------------------------------------------------------------
 // 数据源(相对路径:index.html 同级 + frontend/ + data/)
 // ---------------------------------------------------------------------------
 
 const MOOD_TAGS_URL = "../data/mood_tags.json";
-const CRISIS_KW_URL = "../data/crisis_keywords.json";
+const CRISIS_KW_URL = "../data/crisis_keywords.json"; // 0915 T3 起保留 url 引用(供外部模块调用),本文件不再直接 fetch
 const STORAGE_KEY = "psy_checkin_logs_v1";
 
 // ---------------------------------------------------------------------------
@@ -34,7 +36,8 @@ const STORAGE_KEY = "psy_checkin_logs_v1";
 // ---------------------------------------------------------------------------
 
 let _moodTagsCache = null;
-let _crisisKwCache = null;
+// _crisisKwCache 已废弃(0915 T3):危机检测下沉到 crisis_monitor.js 统一处理(attachCrisisMonitor 内部缓存),
+// checkin.js 仅在 attachCrisisMonitor 返回值上读 signal 字段写入 log.crisis_signal。
 
 // ---------------------------------------------------------------------------
 // 工具
@@ -53,11 +56,9 @@ async function loadMoodTags() {
   return data;
 }
 
+// loadCrisisKeywords 已废弃(0915 T3):保留为 no-op 占位避免外部破坏,crisis_monitor.js 自管缓存。
 async function loadCrisisKeywords() {
-  if (_crisisKwCache) return _crisisKwCache;
-  const data = await fetchJson(CRISIS_KW_URL);
-  _crisisKwCache = data;
-  return data;
+  return null;
 }
 
 function loadLogs() {
@@ -88,28 +89,10 @@ function todayStr() {
   return `${y}-${m}-${day}`;
 }
 
-// 从 crisis_keywords 抽取 critical 词条(打包为 Set 用于 O(1) 匹配)
-function extractCriticalTerms(crisisData) {
-  const set = new Set();
-  for (const cat of crisisData.keyword_categories || []) {
-    for (const kw of cat.keywords || []) {
-      if (kw.severity === "critical" && kw.term) {
-        set.add(String(kw.term).toLowerCase());
-      }
-    }
-  }
-  return set;
-}
-
-// 简单子串匹配;返回命中的 critical 词
-function matchCrisis(text, criticalSet) {
-  if (!text || !criticalSet || !criticalSet.size) return null;
-  const lower = text.toLowerCase();
-  for (const term of criticalSet) {
-    if (lower.includes(term)) return term;
-  }
-  return null;
-}
+// 0911 旧的 extractCriticalTerms / matchCrisis / renderCrisisAlert 已废弃(0915 T3):
+// 危机检测下沉到 crisis_monitor.js 统一处理(attachCrisisMonitor + openCrisisModal),
+// checkin.js 不再直接实现 critical 词条匹配 / inline warn-box。
+// 历史实现见 git log e85ef88(0912 T3)及之前。
 
 // 强度 → 颜色深度(per intensity_levels.ui_color_depth)
 function intensityColor(intensity, valence) {
@@ -302,21 +285,34 @@ export async function renderCheckin(root) {
     });
   });
 
-  // 文字输入 + 计数器 + 危机检测
+  // 文字输入 + 计数器 + 危机检测(0915 T3 · crisis_monitor.js 接管)
+  //   - 旧实现(0911):inline warn-box 仅 critical 子串匹配,见 git log e85ef88 之前
+  //   - 新实现(0915):attachCrisisMonitor 接管,多级严重程度 + 否定窗口 + 共病升级 + 资源弹窗
+  //   - 本文件保留 crisis_signal 字段供提交时记录,值由 monitor 的 onChange 同步
   const noteEl = root.querySelector("#psy-note");
   const noteCount = root.querySelector("#psy-note-count");
   const crisisAlert = root.querySelector("#psy-crisis-alert");
+  let lastSeverity = null; // 记录最近一次命中严重程度(供提交写入 log)
+  let monitor = null;
+  try {
+    monitor = attachCrisisMonitor(noteEl, {
+      container: crisisAlert,
+      autoOpen: true, // critical 命中自动弹窗(其余级别显示浮动指示器,用户点击或触发后弹)
+      onChange: (result) => {
+        lastSeverity = result.severity;
+        // 同步到 crisisAlert.dataset.signal(用于表单提交时记录)
+        // 状态机: none / low / medium / high / critical / critical_upgraded
+        crisisAlert.dataset.signal = result.severity
+          ? `${result.severity}${result.upgraded ? "_upgraded" : ""}`
+          : "none";
+      },
+    });
+  } catch (e) {
+    console.error("[checkin] attachCrisisMonitor 失败,降级为无监测", e);
+  }
+
   noteEl.addEventListener("input", () => {
-    const txt = noteEl.value || "";
-    noteCount.textContent = String(txt.length);
-    // 危机关键词监测(critical only · 仅作用于本输入框)
-    if (txt.length > 0 && _crisisKwCache) {
-      const terms = extractCriticalTerms(_crisisKwCache);
-      const hit = matchCrisis(txt, terms);
-      renderCrisisAlert(crisisAlert, hit);
-    } else {
-      renderCrisisAlert(crisisAlert, null);
-    }
+    noteCount.textContent = String((noteEl.value || "").length);
   });
 
   // 提交
@@ -348,12 +344,21 @@ export async function renderCheckin(root) {
       valence_label: valenceLabel(valence),
       tags: tagsArr,
       note,
-      // 危机检测标记(仅用于观察,不入决策;per pairing_rules.crisis_keywords_boundary)
+      // 危机检测标记(0915 T3:由 crisis_monitor 写入;仅用于观察,不入决策;
+      // per pairing_rules.crisis_keywords_boundary)。状态:none / low / medium / high / critical [/ _upgraded]
       crisis_signal: crisisAlert.dataset.signal || "none",
+      // 命中词条(0915 T3 新增 · 仅记录供回溯,不参与任何决策)
+      crisis_hits: monitor && monitor.getLastResult ? (monitor.getLastResult().hits || []).map((h) => ({
+        term: h.term,
+        severity: h.severity,
+        category: h.category,
+      })) : [],
     };
     const all = loadLogs();
     all.push(log);
     saveLogs(all);
+    // 卸载监测器(下次进入重新挂)
+    if (monitor && monitor.detach) monitor.detach();
     navigate("/checkin/saved");
   });
 }
@@ -373,24 +378,6 @@ function flashCountHint(msg) {
     el.textContent = old;
     el.style.color = "";
   }, 1500);
-}
-
-function renderCrisisAlert(host, hitTerm) {
-  if (!host) return;
-  if (hitTerm) {
-    host.dataset.signal = "critical_hit";
-    host.innerHTML = `
-      <div class="psy-warn-box">
-        <h4>⚠ 检测到可能需要支持的表达</h4>
-        <p>你刚刚写下的内容,可能与较强烈的情绪相关。如果此刻感到很痛苦或想结束,请记得你不是一个人。</p>
-        <p><strong>24 小时心理援助热线</strong>:400-161-9995(北京心理危机研究与干预中心,全国)</p>
-        <p class="psy-muted">(本提示仅基于关键词简单匹配,非诊断,可在继续编辑时自动消失。)</p>
-      </div>
-    `;
-  } else {
-    host.dataset.signal = "none";
-    host.innerHTML = "";
-  }
 }
 
 // ---------------------------------------------------------------------------

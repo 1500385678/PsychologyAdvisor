@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>心理顾问 · Web App</title>
-    <meta name="description" content="心理顾问 Web App · Phase 1 测评页(0910) + 情绪打卡页(0911) + 情绪日历(0912) + 科普文章页(0914)" />
+    <meta name="description" content="心理顾问 Web App · Phase 1 测评页(0910) + 情绪打卡页(0911) + 情绪日历(0912) + 科普文章页(0914) + 危机检测埋点(0915)" />
     <style>
       :root {
         --psy-bg: #fafaf7;
@@ -287,12 +287,106 @@
       .psy-article-siblings ul { margin: 0; padding-left: 1.2em; font-size: 13px; }
       .psy-article-siblings a { color: var(--psy-accent); text-decoration: none; }
       .psy-article-siblings a:hover { text-decoration: underline; }
+
+      /* === Phase 1 #6 危机检测埋点(0915 T3) === */
+      /* 浮动指示器(挂在 input/textarea 旁,点击打开资源弹窗) */
+      .psy-cm-indicator {
+        display: inline-flex; align-items: center; gap: 4px;
+        margin-left: 8px; padding: 2px 10px; min-height: 24px;
+        border: 1px solid var(--psy-border); border-radius: 12px;
+        background: #fff; color: var(--psy-muted);
+        font-size: 12px; cursor: pointer; vertical-align: middle;
+        transition: border-color .15s, color .15s;
+      }
+      .psy-cm-indicator:hover { background: #f9fafb; }
+      .psy-cm-indicator .psy-cm-dot {
+        display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+        background: var(--psy-muted);
+      }
+      .psy-cm-input-warn { border-color: var(--psy-warn); box-shadow: 0 0 0 2px rgba(185, 28, 28, .08); }
+
+      /* 资源弹窗 */
+      .psy-cm-modal-mask {
+        position: fixed; inset: 0; background: rgba(15, 23, 42, .55);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 9999; padding: 20px;
+      }
+      .psy-cm-modal {
+        --psy-cm-color: var(--psy-warn);
+        background: #fff; border-radius: 10px; max-width: 520px; width: 100%;
+        max-height: 85vh; overflow-y: auto;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, .25);
+        display: flex; flex-direction: column;
+      }
+      .psy-cm-modal-head {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 16px 20px; border-bottom: 1px solid var(--psy-border);
+      }
+      .psy-cm-modal-head h3 { margin: 0; font-size: 17px; color: var(--psy-cm-color); }
+      .psy-cm-close {
+        background: none; border: none; font-size: 22px; line-height: 1;
+        color: var(--psy-muted); cursor: pointer; padding: 0 4px;
+      }
+      .psy-cm-close:hover { color: var(--psy-fg); }
+      .psy-cm-modal-body { padding: 16px 20px; flex: 1 1 auto; }
+      .psy-cm-modal-body h4 {
+        margin: 16px 0 8px; font-size: 14px; color: var(--psy-cm-color);
+      }
+      .psy-cm-opening { margin: 0 0 12px; line-height: 1.6; }
+      .psy-cm-hits {
+        display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px;
+      }
+      .psy-cm-hit {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 3px 10px; border-radius: 12px;
+        border: 1px solid var(--psy-warn); background: #fff;
+        font-size: 13px;
+      }
+      .psy-cm-hit small { color: var(--psy-muted); font-size: 11px; }
+      .psy-cm-hotlines, .psy-cm-resources { list-style: none; padding: 0; margin: 0; }
+      .psy-cm-hotline, .psy-cm-resource {
+        padding: 10px 0; border-bottom: 1px dashed var(--psy-border);
+      }
+      .psy-cm-hotline:last-child, .psy-cm-resource:last-child { border-bottom: none; }
+      .psy-cm-phone {
+        display: inline-block; margin-top: 4px; font-size: 17px; font-weight: 600;
+        color: var(--psy-cm-color); text-decoration: none;
+      }
+      .psy-cm-meta {
+        margin-top: 4px; font-size: 12px; color: var(--psy-muted);
+        display: flex; flex-wrap: wrap; gap: 8px;
+      }
+      .psy-cm-note { margin: 4px 0 0; font-size: 13px; color: var(--psy-muted); }
+      .psy-cm-link {
+        display: inline-block; margin-top: 4px; font-size: 13px;
+        color: var(--psy-accent); text-decoration: none;
+      }
+      .psy-cm-link:hover { text-decoration: underline; }
+      .psy-cm-disclaimer {
+        margin: 16px 0 0; padding: 10px 12px; background: #fef2f2;
+        border-radius: 6px; font-size: 12px; color: #991b1b;
+      }
+      .psy-cm-modal-foot {
+        display: flex; justify-content: flex-end; gap: 8px;
+        padding: 12px 20px; border-top: 1px solid var(--psy-border);
+      }
+      .psy-cm-btn {
+        padding: 7px 14px; border-radius: 6px; font-size: 14px;
+        border: 1px solid var(--psy-border); background: #fff;
+        color: var(--psy-fg); cursor: pointer;
+      }
+      .psy-cm-btn:hover { background: #f9fafb; }
+      .psy-cm-btn-secondary { color: var(--psy-muted); }
+      .psy-cm-btn-primary {
+        background: var(--psy-accent); color: #fff; border-color: var(--psy-accent);
+      }
+      .psy-cm-btn-primary:hover { background: #0d9488; }
     </style>
   </head>
   <body>
     <header class="psy-header">
       <h1>心理顾问 · Web App</h1>
-      <span class="psy-tag">Phase 1 · 测评 + 打卡 + 日历 + 科普(0910 + 0911 + 0912 + 0914)</span>
+      <span class="psy-tag">Phase 1 · 测评 + 打卡 + 日历 + 科普 + 危机检测(0910 + 0911 + 0912 + 0914 + 0915)</span>
       <nav class="psy-nav">
         <a href="#/articles">科普</a>
         <a href="#/checkin">情绪打卡</a>
