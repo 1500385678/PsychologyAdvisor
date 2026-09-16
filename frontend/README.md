@@ -1,41 +1,43 @@
 # PsychologyAdvisor · Frontend
 
-> Phase 1 · 骨架(0909 T3 立) + 测评页(0910 T3 立) + 情绪打卡页(0911 T3 立) + 情绪日历视图(0912 T3 立) + 科普文章页(0914 T3 立) + 危机检测埋点(0915 T3 立)
+> Phase 1 · 骨架(0909 T3 立) + 测评页(0910 T3 立) + 情绪打卡页(0911 T3 立) + 情绪日历视图(0912 T3 立) + 科普文章页(0914 T3 立) + 危机检测埋点(0915 T3 立) + 飞书 OAuth + 端到端加密(0917 T3 立)
 > 行业代号:10-心理-Psychology
 > 项目代号:**PsychologyAdvisor**(与 `项目开发计划.md` / GitHub / Gitee 仓库名一致)
-> 对应后端:`backend/`(0908 T3 立,FastAPI + 5 量表读取 API)
+> 对应后端:`backend/`(0908 T3 立 FastAPI 5 端点 + 0917 T3 立 OAuth/JWT/日记 6 端点 = 11 端点)
 
 ## 一、当前范围
 
-0915 T3 在 0914 科普文章页基础上**新增危机检测埋点业务模块**(Phase 1 #6),并把 0911 起的 note 输入框 inline warn-box(critical 简单子串匹配)替换为多级严重程度 + 资源弹窗。当前范围:
+0917 T3 在 0915 危机检测埋点基础上**新增飞书 OAuth + 端到端加密业务模块**(Phase 1 #7),并把 0911 起的纯 localStorage 打卡存储升级为"登录态下加密远端存 + 离线降级 localStorage"。当前范围:
 
 - ✅ 测评页(Phase 1 #4 · 0910 T3 立):选量表 → 答题 → 算分 → 解读(非诊断性)
-- ✅ 情绪打卡页(Phase 1 #2 · 0911 T3 立,0915 T3 升级):滑动条(1-5)+ 标签选择(≤3,11 子类 60 标签)+ 文字输入(≤200 字)+ 最近 7 天回顾(localStorage 持久化)+ note 框挂 `attachCrisisMonitor` 4 级严重程度监测(critical 命中自动弹资源窗)
+- ✅ 情绪打卡页(Phase 1 #2 · 0911 T3 立,0915 T3 升级危机监测,0917 T3 升级加密远端存):滑动条(1-5)+ 标签选择(≤3,11 子类 60 标签)+ 文字输入(≤200 字)+ 最近 7 天回顾(localStorage 持久化,登录态下额外加密远端存)+ note 框挂 `attachCrisisMonitor` 4 级严重程度监测(critical 命中自动弹资源窗)
 - ✅ 情绪日历视图(Phase 1 #3 · 0912 T3 立):30 天窗口(月度切换 / SVG 折线 / 5×6 日色块 / 标签云 / 区间统计)+ 某日详情(支持一天多次打卡,localStorage 共用 key 与 checkin.js 实时同步)
 - ✅ 科普文章页(Phase 1 #5 · 0914 T3 立):10 分类卡片网格 + 全部/收藏双 tab + 标题/定义搜索 + 概念卡片网格 + 收藏按钮 + 详情页 markdown 渲染正文 + 同分类上一篇/下一篇 + 同分类侧栏 8 条 + 24h 热线免责声明(数据源 `../data/concepts/*.json` 10 文件并发 fetch + `localStorage.psy_articles_favorites_v1` Set 持久化收藏 id,内存缓存免二次 fetch)
 - ✅ 危机检测埋点(Phase 1 #6 · 0915 T3 立 · 跨模块组件):`attachCrisisMonitor(inputEl, opts)` 通用监测器 + `openCrisisModal(severity, hits)` 资源弹窗;4 级严重程度(critical/high/medium/low,per `data/crisis_keywords.json` severity_levels)+ 否定窗口(6 字符,per matching_rules.negation_words)+ 共病升级(cat_suicidal_ideation + cat_hopelessness high 同时出现 → 整体 critical,per matching_rules.co_occurrence_upgrade)+ 键盘节流(>240 keystrokes/min 静默,per matching_rules.max_keystrokes_per_minute)+ 性能预算(<50ms/扫,per matching_rules.performance_budget_ms)+ debounce 800ms(per matching_rules.debounce_ms)+ 24h snooze(localStorage `psy_crisis_snooze_v1` 同 severity 不再主动弹)+ 资源弹窗内含 hotlines_zh_cn + resources.json 危机匹配项 + 5 类 UI 控件(浮动指示器 / 输入框边框色 / 命中词 chips / 弹窗 / 24h 热线 tel 链接);checkin.js 0915 起调用
-- ✅ 简易 hash 路由(`#/scales`、`#/scales/{code}` 0910 立;`#/checkin`、`#/checkin/new`、`#/checkin/saved` 0911 立;`#/calendar`、`#/calendar/day/{date}` 0912 立;`#/articles`、`#/articles/{id}`、`#/articles?cat=XX` 0914 立;`?anchor=YYYY-MM-DD` query string 0912 立;0 依赖)
-- ✅ 与后端 FastAPI 5 端点真实联调(`/api/scales`、`/api/scales/{code}`,0910 T3 起)
+- ✅ 飞书 OAuth + 端到端加密(Phase 1 #7 · 0917 T3 立 · 跨 backend + frontend):`auth.js` OAuth 流程 + JWT 状态 + subscribe 广播 + 401 自动登出(memory-only secret + localStorage `psy_jwt_v1` / `psy_user_v1` 持久化)+ `crypto.js` Web Crypto API AES-GCM 256 + PBKDF2-SHA256-200k 派生(明文仅在浏览器内存,服务端永不见)+ `login_view.js` 飞书登录页 + passphrase 输入(modal 模式一键登录,生产替换为真飞书 OAuth 跳转)+ checkin.js 登录态下提交时用 passphrase + AES-GCM 加密 note → POST `/api/diary`(密文 + iv + salt + meta,失败降级 localStorage + remote_status 标注);JWT HS256 零依赖手签(`/auth/me` 校验 + 401 自动登出);真飞书模式:`#/auth/callback?jwt=...&user_id=...` 由后端 302 落地,前端解析 + 持久化
+- ✅ 简易 hash 路由(`#/scales`、`#/scales/{code}` 0910 立;`#/checkin`、`#/checkin/new`、`#/checkin/saved` 0911 立;`#/calendar`、`#/calendar/day/{date}` 0912 立;`#/articles`、`#/articles/{id}`、`#/articles?cat=XX` 0914 立;`#/login`、`#/auth/callback` 0917 立;`?anchor=YYYY-MM-DD` query string 0912 立;0 依赖)
+- ✅ 与后端 FastAPI 11 端点真实联调(`/api/scales`、`/api/scales/{code}` 0910 T3 起;`/auth/feishu/login`、`/auth/feishu/callback`、`/auth/me`、`/api/diary`、`/api/diary/{id}` 0917 T3 起)
 - ✅ 测评结果展示:总分 + severity band(按 interpretation[].range 匹配)+ 推荐建议
 - ✅ 危机提示:有 `red_flags` 的量表显示 24h 热线(400-161-9995)
 - ✅ 非诊断免责声明(每个量表自带 disclaimer + 科普详情页统一展示 + 危机弹窗统一展示,前端统一展示)
 - ✅ 30 天 SVG 折线(0 依赖手写,viewBox 600×120 + 网格 + 5 档色点 + hover title,0912 T3 立)
 - ✅ 0 依赖 markdown 渲染器(`**bold**` / `*italic*` / \`code\` / `<p>` / `<ul>` / `<ol>` / `<table>` 6 类语法,0914 T3 立,自写 ~50 行)
+- ✅ 0 依赖 JWT HS256 手签(`hmac`+`hashlib`+`base64` stdlib 三件套,无 python-jose / pyjwt 依赖,backend 0917 T3 立)
 
-当前**不包含**(本轮 0915 内未做,留后续 commit):
+当前**不包含**(本轮 0917 内未做,留后续 commit):
 
-- React / Vue / 任何框架(继续纯 vanilla ES Module,0915 内不引)
-- 图表库(Chart.js / D3 / Recharts,0912 用手写 SVG 折线,0915 无图表)
-- markdown 库(marked / markdown-it / showdown,0914 自写 0 依赖渲染器,0915 不引)
-- 飞书 OAuth 登录(Phase 1 #7,留 0916+,0915 巡检 §三 P-1 #1 建议)
-- Docker Compose(Phase 1 #8,留 MVP 收尾,0917+)
+- React / Vue / 任何框架(继续纯 vanilla ES Module,0917 内不引)
+- 图表库(Chart.js / D3 / Recharts,0912 用手写 SVG 折线,0917 无图表)
+- markdown 库(marked / markdown-it / showdown,0914 自写 0 依赖渲染器,0917 不引)
+- 真飞书 OAuth 跳转(0917 是 mock 模式,生产替换 `backend/main.py` `_exchange_feishu_code` 即可)
+- Refresh token(JWT 24h 过期重新走 OAuth,符合日记低频访问场景)
+- Docker Compose(Phase 1 #8,留 MVP 收尾,0918+)
 - 状态管理(无 Pinia / Redux / Zustand)
-- 鉴权(Phase 1 后段)
 - 构建工具(无 Vite / Webpack,纯浏览器 ES Module 加载)
 - 打包 / 压缩 / Tree Shaking
-- 打卡数据后端持久化(当前 localStorage,留飞书 OAuth 阶段)
-- 科普数据后端持久化(当前 localStorage 收藏 + data/concepts 静态 JSON,留飞书 OAuth 阶段)
-- 危机监测后端上报(当前纯前端监测 + 资源弹窗,留飞书 OAuth 阶段统一加)
+- 打卡数据后端全文搜索/趋势聚合(目前只能 GET 单条,列表只返 meta)
+- 科普数据后端持久化(当前 localStorage 收藏 + data/concepts 静态 JSON)
+- 危机监测后端上报(当前纯前端监测 + 资源弹窗,后端不做危机检测)
 
 ## 二、目录结构
 
@@ -43,15 +45,18 @@
 frontend/
 ├── README.md         本文件
 ├── package.json      npm scripts 占位(dev 启 http.server 5173,无依赖)
-├── index.html        骨架 + 测评 + 打卡 + 日历 + 科普 + 危机弹窗 CSS + 顶部 nav(科普 / 测评 / 情绪打卡 / 情绪日历)
+├── index.html        骨架 + 测评 + 打卡 + 日历 + 科普 + 危机弹窗 + 登录 CSS + 顶部 nav(科普 / 测评 / 情绪打卡 / 情绪日历 / 登录)
 └── src/
-    ├── main.js       入口(注册路由 + 启动 + 暴露 window.__PSY_FRONTEND__,0915 头部注释增危机检测模块)
+    ├── main.js       入口(注册路由 + 启动 + 暴露 window.__PSY_FRONTEND__,0915 头部注释增危机检测模块,0917 增 auth/crypto + 启动时 refreshMe)
     ├── router.js     简易 hash 路由(0 依赖,0910 T3 立 · 0912 T3 增 query string 支持)
-    ├── assessment.js 测评页业务模块(列表 / 答题 / 结果 3 视图,0910 T3 立)
-    ├── checkin.js    情绪打卡页业务模块(首页 / 表单 / 完成,0911 T3 立 · 0915 T3 接入 attachCrisisMonitor)
+    ├── assessment.js 测评页业务模块(列表 / 答题 / 结果 3 视图,0910 T3 立 · 导出 API_BASE 供 auth.js 复用)
+    ├── checkin.js    情绪打卡页业务模块(首页 / 表单 / 完成,0911 T3 立 · 0915 T3 接入 attachCrisisMonitor · 0917 T3 登录态下加密远端存)
     ├── calendar.js   情绪日历视图业务模块(30 天日历 / 某日详情,0912 T3 立)
     ├── articles.js   科普文章页业务模块(列表 / 详情 / 搜索 / 收藏,0914 T3 立)
-    └── crisis_monitor.js  危机检测埋点业务模块(attachCrisisMonitor + openCrisisModal,0915 T3 立 · 跨模块组件)
+    ├── crisis_monitor.js  危机检测埋点业务模块(attachCrisisMonitor + openCrisisModal,0915 T3 立 · 跨模块组件)
+    ├── auth.js       飞书 OAuth + JWT 状态(0917 T3 立 · 跨模块组件,getJwt/isLoggedIn/subscribe/loginWithFeishu/completeOAuthFromQuery/logout/authedFetch/refreshMe)
+    ├── crypto.js     Web Crypto AES-GCM 256 + PBKDF2(0917 T3 立 · 跨模块组件,encryptString/decryptString/fingerprint)
+    └── login_view.js 登录页视图(0917 T3 立,renderLogin:已登录态展示 user_id + 登出 / 未登录态展示飞书登录按钮 + passphrase 输入提示)
 ```
 
 ## 三、本地启动
@@ -92,21 +97,40 @@ open frontend/index.html
 - 科普详情:点击卡片标题进入(`#/articles/{id}`,如 `#/articles/07-001`),含面包屑 + 标题 + 分类 tag + first_definition + 收藏按钮 + raw 字段 markdown 渲染正文(支持 `**bold**` / `*italic*` / \`code\` / 列表 / 表格 6 类语法)+ 同分类上一篇/下一篇 + 同分类侧栏 8 条 + 24h 热线免责声明
 - Console:`[PsychologyAdvisor/frontend] booted {project, industry, phase, buildAt, scope, apiBase}`
 - 全局对象:`window.__PSY_FRONTEND__` / `window.__PSY_NAV__` 可在 DevTools 读出
-- localStorage keys:`psy_checkin_logs_v1`(打卡数据本地持久化,跨会话保留;checkin.js 写入,calendar.js 只读)+ `psy_articles_favorites_v1`(科普收藏 id 集合 Set,articles.js 读写)+ `psy_crisis_snooze_v1`({severity, until},crisis_monitor.js 写;24h 内同 severity 不再主动弹资源窗,可被用户主动点指示器再次打开)
+- localStorage keys:`psy_checkin_logs_v1`(打卡数据本地持久化,跨会话保留;checkin.js 写入,calendar.js 只读)+ `psy_articles_favorites_v1`(科普收藏 id 集合 Set,articles.js 读写)+ `psy_crisis_snooze_v1`({severity, until},crisis_monitor.js 写;24h 内同 severity 不再主动弹资源窗,可被用户主动点指示器再次打开)+ `psy_jwt_v1` + `psy_user_v1`(0917 T3 立,auth.js 写;JWT 24h 有效 + user_id/登录时间;登出立即清;刷新页面后由 main.js refreshMe 校验)
 
 ## 四、与后端的边界
 
-`backend/`(0908 T3 立)提供 5 个量表读取 API,**测评页消费其中 2 个**:
+`backend/`(0908 T3 立 5 端点 + 0917 T3 立 6 端点 = 11 端点)提供 API,**前端消费 8 个**:
 
 - ✅ `GET /api/scales` → 测评列表卡片(消费,0910 T3 起)
 - ✅ `GET /api/scales/{code}` → 答题页 + 结果页(消费,0910 T3 起)
+- ✅ `GET /auth/feishu/login` → 飞书 OAuth 发起(消费,0917 T3 起,auth.js)
+- ✅ `POST /auth/feishu/callback` → code 换 JWT(消费,0917 T3 起,auth.js · mock 模式 fetch)
+- ✅ `GET /auth/me` → JWT 校验(消费,0917 T3 起,main.js 启动 + auth.js refreshMe)
+- ✅ `POST /api/diary` → 写入加密日记(消费,0917 T3 起,checkin.js 登录态下)
+- ✅ `GET /api/diary/{id}` → 取加密日记密文(消费,0917 T3 起,日记详情页待 Phase 2)
+- ✅ `GET /api/diary` → 列日记 meta(消费,0917 T3 起,日记列表页待 Phase 2)
 - ⏸ `GET /` / `GET /health` / `GET /api/scales/_index/stats` → 当前轮未消费,留后续
 
 API_BASE 默认 `http://127.0.0.1:8000`,可通过 `window.__PSY_API_BASE__` 覆盖。
 
 **CORS**:backend 默认允许跨域(0908 T3 起),若 CORS 报错请先确认 `backend/main.py` 启动时 `--port 8000` 正确。
 
+**鉴权**:0917 T3 起 `Authorization: Bearer <jwt>` 头由 auth.js.authedFetch 自动注入,401 自动登出;密码学层面 AES-GCM 256 + PBKDF2-SHA256-200k,服务端绝不见明文 passphrase;JWT HS256 secret 由 `PSY_JWT_SECRET` 环境变量控制,默认 dev 占位(生产必须改)。
+
 ## 五、变更记录
+
+- **2026-09-17 T3** Phase 1 #7 '飞书 OAuth 登录 + 端到端加密(用户日记)' · 跨 backend + frontend 双层落地
+  - **新增 3 文件**:`src/auth.js` ~200 行(OAuth 流程 + JWT 状态 + subscribe 广播 + 401 自动登出 + authedFetch 自动注入 Bearer · 跨模块组件)+ `src/crypto.js` ~150 行(Web Crypto AES-GCM 256 + PBKDF2-SHA256-200k + fingerprint · 跨模块组件)+ `src/login_view.js` ~115 行(已登录态展示 user_id + 登出 / 未登录态飞书一键登录按钮 + passphrase 输入提示)
+  - **改写 3 文件**:`src/main.js`(0915 T3 95 行 → 0917 T3 149 行,头部注释增 auth/crypto + Phase 1 #7 + 启动时 refreshMe + authSubscribe 同步顶部 nav 登录态 + 新增 2 路由 `#/login` / `#/auth/callback`)+ `src/checkin.js`(0915 T3 390 行 → 0917 T3 468 行,头部注释增 OAuth+E2E 段,登录态下表单头部增 passphrase input,提交时 async — 始终写 localStorage,登录态 + 输入 passphrase 时额外用 crypto.encryptString 加密 → POST `/api/diary` 写入,失败降级 localStorage + `log.remote_status` 标注 remote ok / remote skip / remote fail)+ `index.html`(顶部 tag 加入"OAuth+E2E + 0917" + description meta 同步 + 新增 1 nav 入口"登录" + 1 span 登录态指示 + 登录页 CSS 30+ 行:`.psy-login` / `.psy-login code` / `.psy-login input[type=password]` / `.psy-auth-status` + `.psy-auth-status a/small`)
+  - **就位 Phase 1 checkbox 中 #7 '飞书 OAuth 登录 + 端到端加密'**:可勾 `项目开发计划.md` §六 #253,本轮勾选
+  - **业务规则**(7 条):① JWT 只存 localStorage(`psy_jwt_v1` + `psy_user_v1`),24h 过期,refresh 重走 OAuth ② mock 模式:authorize_url 直接返回本服务回调地址,前端 fetch `/auth/feishu/callback` 拿到 JWT(生产替换 `backend/main.py` `_exchange_feishu_code` 为飞书 `oauth/token` + `authen/v1/user_info` 即可,前端无需改) ③ passphrase 仅活在 DOM(单次加解密),刷新页面后需重新输入才能解密历史日记 ④ AES-GCM 256 + PBKDF2-SHA256-200k,salt 16 字节每次重新生成,iv 12 字节每次重新生成 ⑤ 服务端永不见 plaintext / passphrase / 派生 key,只存 ciphertext + iv + salt + meta ⑥ 用户隔离:服务端 `diary_store/{user_id}.json` 按 JWT.sub 切文件,跨用户不可见 ⑦ 未登录态 / 未输入 passphrase / 远端失败 → 降级 localStorage,不阻塞打卡体验
+  - **关键设计选择**(6 条):① **0 依赖 OAuth 客户端** —— 不引 oauth-client / openid-client 等库,自写 fetch + localStorage + subscribe,~200 行覆盖登录态 + 401 自动登出 + 真飞书模式重定向 ② **Web Crypto API 而非 libsodium** —— 浏览器原生 `crypto.subtle.encrypt` / `deriveKey`,0 字节额外依赖,所有主流浏览器(Chrome/Firefox/Safari/Edge)均支持 ③ **passphrase 不存任何地方** —— 不写 localStorage / sessionStorage / IndexedDB,刷新即丢,避免 XSS 后泄漏;生产应引导用户用密码管理器存 ④ **本地始终缓存** —— localStorage 始终写,即使加密远端存成功也保留本地副本,实现"离线缓存 + 远端备份"双轨;Phase 2 可加日历页合并远端列表 ⑤ **JWT HS256 零依赖手签** —— 后端用 stdlib `hmac`+`hashlib`+`base64` 三件套,`requirements.txt` 不增项;前端用 `atob`/`btoa` 解码 base64,不依赖 js-base64 ⑥ **subscribe 模式广播登录态** —— auth.js 暴露 `subscribe(fn)`,main.js 监听刷新顶部 nav,业务视图按需 `isLoggedIn()` 判断;不引事件总线 / MobX / Zustand
+  - **不动** `backend/`(0917 同期在 backend/ 立 6 端点,本 README §一/§二/§三/§四/§五 同步;详见 backend/README.md §一/§六)/ `data/`(Phase 0 100% ready,0917 不重写)/ `docs/`(0825 至今 24 日空,0917 仍 P2 观察)/ §六 #247/#248/#249/#250/#251/#252 已勾 6 项(避免 1 commit 勾 2 项反模式)/ §六 #254 Docker Compose(留 0918+ MVP 收尾)
+  - **关键里程碑**:① 0825 立项以来业务模块层 5 动 → 6 动(测评页 + 情绪打卡页 + 情绪日历 + 科普文章页 + 危机检测埋点 + OAuth+E2E)② Phase 1 checkbox 6/8 → **7/8(87.5%)** 🎉 0825 立项以来首次破 80% 进度,距 8/8 = 100% 仅剩 1 项(Docker Compose)③ 内部 demo 首次具备"用户登录 + 加密同步"双能力:`uvicorn main:app --port 8000` + `python3 -m http.server 5173` 双进程启动后,浏览器 `#/login` 一键 mock 登录 → `#/checkin/new` 输入 passphrase + note → 提交 → 后端 `backend/data/diary_store/{user_id}.json` 写入 ciphertext + iv + salt(plaintext 永不落地) = **6 业务模块 + 11 端点 + 4 资产 + 4 持久化键 + 2 跨模块组件 + 1 加密体系** 全跑通 ④ 距 MVP ~0928 剩 11 天,剩余 1 项 checkbox(Docker Compose)11 天内必落地 = 1 项/11 日,节奏极宽松
+  - **未启动** §六 #254 Docker Compose 一键启动(留 0918+,MVP 收尾)/ §六 #5 真实飞书 OAuth(留 Phase 2)/ `docs/` 24 日空(留 0918+ 业务模块再就位时一起补)/ 日记列表/详情前端 UI(后端 API 已就位,前端列表/详情页留 Phase 2)
+  - 配套更新 §一 当前范围(新增"飞书 OAuth + 端到端加密"段 + 调整"不包含"段删 OAuth / 鉴权 / 打卡后端持久化 3 条)、§二 目录结构(新增 `auth.js` / `crypto.js` / `login_view.js` 3 行 + main.js / checkin.js / index.html 行更新)、§三 启动预期(localStorage keys 增 `psy_jwt_v1` + `psy_user_v1` 2 行)、§四 与后端的边界(消费 5 端点 → 消费 8 端点 + 新增鉴权段)
 
 - **2026-09-15 T3** Phase 1 #6 '危机检测埋点' 业务模块 · frontend 落地
   - **新增 1 文件**:`src/crisis_monitor.js` ~440 行(`attachCrisisMonitor` 通用监测器 + `openCrisisModal` 资源弹窗 + 1 flattenTerms + 1 scanText + 1 isNegated + 1 loadSnooze/saveSnooze + 1 buildModalHtml,0 依赖,跨模块组件)

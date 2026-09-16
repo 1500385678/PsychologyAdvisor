@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>心理顾问 · Web App</title>
-    <meta name="description" content="心理顾问 Web App · Phase 1 测评页(0910) + 情绪打卡页(0911) + 情绪日历(0912) + 科普文章页(0914) + 危机检测埋点(0915)" />
+    <meta name="description" content="心理顾问 Web App · Phase 1 测评页(0910) + 情绪打卡页(0911) + 情绪日历(0912) + 科普文章页(0914) + 危机检测埋点(0915) + 飞书OAuth+E2E加密(0917)" />
     <style>
       :root {
         --psy-bg: #fafaf7;
@@ -288,6 +288,25 @@
       .psy-article-siblings a { color: var(--psy-accent); text-decoration: none; }
       .psy-article-siblings a:hover { text-decoration: underline; }
 
+      /* === Phase 1 #7 飞书 OAuth + 端到端加密(0917 T3) === */
+      .psy-login { max-width: 640px; }
+      .psy-login h2 { margin-top: 0; }
+      .psy-login code {
+        font-size: 13px; padding: 2px 6px; background: #f3f4f6;
+        border-radius: 3px; word-break: break-all;
+      }
+      .psy-login input[type=password] {
+        width: 100%; padding: 10px; border: 1px solid var(--psy-border);
+        border-radius: 6px; font: inherit; font-size: 14px;
+      }
+      .psy-login input[type=password]:focus { outline: 2px solid var(--psy-accent); outline-offset: 1px; }
+      .psy-auth-status {
+        font-size: 13px; color: var(--psy-muted); margin-left: 8px;
+      }
+      .psy-auth-status a { color: var(--psy-accent); text-decoration: none; }
+      .psy-auth-status a:hover { text-decoration: underline; }
+      .psy-auth-status small { opacity: .7; }
+
       /* === Phase 1 #6 危机检测埋点(0915 T3) === */
       /* 浮动指示器(挂在 input/textarea 旁,点击打开资源弹窗) */
       .psy-cm-indicator {
@@ -386,12 +405,14 @@
   <body>
     <header class="psy-header">
       <h1>心理顾问 · Web App</h1>
-      <span class="psy-tag">Phase 1 · 测评 + 打卡 + 日历 + 科普 + 危机检测(0910 + 0911 + 0912 + 0914 + 0915)</span>
+      <span class="psy-tag">Phase 1 · 测评 + 打卡 + 日历 + 科普 + 危机检测 + OAuth+E2E(0910 + 0911 + 0912 + 0914 + 0915 + 0917)</span>
       <nav class="psy-nav">
         <a href="#/articles">科普</a>
         <a href="#/checkin">情绪打卡</a>
         <a href="#/calendar">情绪日历</a>
         <a href="#/scales">测评</a>
+        <a href="#/login">登录</a>
+        <span class="psy-auth-status"><a href="#/login">登录</a></span>
       </nav>
     </header>
     <main id="app">

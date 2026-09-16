@@ -1,6 +1,7 @@
 // 心理顾问 · 情绪打卡页业务模块
 // 2026-09-11 T3 立 · Phase 1 #2 "情绪打卡页"(滑动条 + 标签 + 文字)
 // 2026-09-15 T3 接入 Phase 1 #6 '危机检测埋点'(替换 0911 起的 inline warn-box,升级为多级严重程度 + 资源弹窗)
+// 2026-09-17 T3 接入 Phase 1 #7 '飞书 OAuth + 端到端加密'(登录态下加密 note → POST /api/diary,失败降级 localStorage)
 // 0 依赖 · 纯 ES Module · 数据源: data/mood_tags.json(Phase 0 资产 · 11 子类 / 60 标签)
 //
 // 视图:
@@ -11,7 +12,8 @@
 // 数据约定(per data/mood_tags.json pairing_rules):
 //   - tags: 最多 3 个(pairs.tag_combination_max)
 //   - note: 自由文本 ≤ 200 字(pairs.mood_log_data_shape + W36 计划注)
-//   - 持久化: localStorage(无后端依赖,后续可加 POST /api/checkin)
+//   - 持久化(localStorage): 始终保留,作为离线缓存
+//   - 持久化(远端): 登录态下,note 用 passphrase + AES-GCM 加密 → POST /api/diary;plaintext 不出浏览器
 //   - 危机检测: 仅作用于 note 输入框,不作用于 tag 选择(pairs.crisis_keywords_boundary)
 //
 // UI 映射(per intensity_levels):
@@ -22,6 +24,8 @@
 
 import { escapeHtml, navigate } from "./router.js";
 import { attachCrisisMonitor } from "./crisis_monitor.js";
+import { isLoggedIn, authedFetch } from "./auth.js";
+import { encryptString } from "./crypto.js";
 
 // ---------------------------------------------------------------------------
 // 数据源(相对路径:index.html 同级 + frontend/ + data/)
@@ -222,6 +226,23 @@ export async function renderCheckin(root) {
       <h2>今日打卡</h2>
       <p class="psy-hint">日期:<strong>${escapeHtml(todayStr())}</strong>(每次打卡会自动记录时间)</p>
 
+      ${
+        isLoggedIn()
+          ? `<div class="psy-disclaimer">
+              <strong>已登录</strong>:提交时日记将<strong>端到端加密</strong>同步到服务端(passphrase 仅本地浏览器内存,服务端不见明文)。
+              未登录?→ <a href="#/login">登录</a>
+            </div>
+            <div class="psy-field">
+              <label for="psy-passphrase">日记加密 passphrase(仅本次会话有效)</label>
+              <input id="psy-passphrase" type="password" autocomplete="off" placeholder="本会话首次输入后刷新页面需重输" />
+              <small class="psy-muted">不输入则只保存到本地(localStorage),不上传服务端。</small>
+            </div>`
+          : `<div class="psy-disclaimer">
+              <strong>未登录</strong>:本次打卡只保存到本地(localStorage)。
+              <a href="#/login">登录</a> 后可端到端加密同步到服务端。
+            </div>`
+      }
+
       <form id="psy-checkin-form">
         <!-- 1. 滑动条 -->
         <div class="psy-field">
@@ -317,7 +338,8 @@ export async function renderCheckin(root) {
 
   // 提交
   const form = root.querySelector("#psy-checkin-form");
-  form.addEventListener("submit", (ev) => {
+  const passphraseInput = root.querySelector("#psy-passphrase"); // 登录态下存在,未登录为 null
+  form.addEventListener("submit", async (ev) => {
     ev.preventDefault();
     const valence = Number(valenceInput.value);
     const tagsArr = Array.from(selectedTags).map((term) => {
@@ -354,9 +376,56 @@ export async function renderCheckin(root) {
         category: h.category,
       })) : [],
     };
+    // 1) 始终先存 localStorage(离线缓存 + 未登录态 fallback)
     const all = loadLogs();
     all.push(log);
     saveLogs(all);
+
+    // 2) 登录态 + 输入 passphrase → 端到端加密 + POST /api/diary
+    let remoteStatus = null;
+    if (isLoggedIn() && passphraseInput && passphraseInput.value.length > 0) {
+      try {
+        const enc = await encryptString(note, passphraseInput.value);
+        const meta = {
+          date: log.date,
+          valence: log.valence,
+          valence_label: log.valence_label,
+          tags: log.tags,
+          crisis_signal: log.crisis_signal,
+          // 仅存 meta · 不存 note(plaintext)
+          encrypted: true,
+          enc_alg: "AES-GCM-256+PBKDF2-SHA256-200k",
+        };
+        const r = await authedFetch(`${(await import("./assessment.js")).API_BASE}/api/diary`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ciphertext_b64: enc.ciphertext_b64,
+            iv_b64: enc.iv_b64,
+            salt_b64: enc.salt_b64,
+            meta,
+          }),
+        });
+        if (!r.ok) {
+          const text = await r.text().catch(() => "");
+          remoteStatus = `remote fail HTTP ${r.status} ${text.slice(0, 80)}`;
+        } else {
+          const resp = await r.json().catch(() => ({}));
+          remoteStatus = `remote ok (id=${resp.id || "?"})`;
+          log.diary_id = resp.id;
+        }
+      } catch (e) {
+        remoteStatus = `remote error: ${e.message || String(e)}`;
+      }
+      // 清空 passphrase input(防 XSS / 共享电脑)
+      passphraseInput.value = "";
+    } else if (isLoggedIn()) {
+      remoteStatus = "remote skip (no passphrase)";
+    } else {
+      remoteStatus = "remote skip (not logged in)";
+    }
+    log.remote_status = remoteStatus;
+
     // 卸载监测器(下次进入重新挂)
     if (monitor && monitor.detach) monitor.detach();
     navigate("/checkin/saved");
