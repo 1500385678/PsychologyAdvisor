@@ -1,0 +1,52 @@
+# PsychologyAdvisor · Docker 构建上下文忽略文件
+#
+# 0918 T3 新增 · 避免 docker build 时把不必要文件 COPY 进镜像
+#
+# 范围:
+#   - .git / .Log / .DS_Store / __pycache__ / node_modules / .venv / 临时文件
+#   - docs/(0825 至今空,镜像不需要)
+#   - frontend/src/__pycache__/ 等意外生成
+#   - .env(env 文件不进镜像,运行时通过 docker-compose env_file 注入)
+#   - *.md docs 文档不进镜像(README 单独 COPY 进 frontend 镜像)
+
+# git
+.git/
+.gitignore
+.gitattributes
+
+# 日志与临时
+.Log/
+.DS_Store
+*.log
+*.tmp
+*.swp
+*~
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.pytest_cache/
+
+# Node(frontend 0 依赖,但保险起见)
+node_modules/
+package-lock.json
+
+# 文档不进镜像(README 由 frontend Dockerfile 单独 COPY)
+README.md
+backend/README.md
+项目开发计划.md
+心理顾问开发架构与计划.md
+docs/
+
+# 环境变量(运行时通过 docker-compose 注入)
+.env
+.env.local
+
+# 运行时数据(日记密文,build 时不需要)
+backend/data/diary_store/
+
+# Plan/巡检草稿
+.plan/

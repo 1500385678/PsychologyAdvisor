@@ -4,3 +4,4 @@ node_modules/
 .venv/
 __pycache__/
 backend/data/diary_store/   # 0917 Phase 1 #7 用户日记密文存储,运行时生成不入库
+.env                        # 0918 Phase 1 #8 Docker Compose env 文件,含 PSY_JWT_SECRET,不入库

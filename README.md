@@ -105,7 +105,81 @@ python3 scripts/inventory.py -o docs/data_inventory.md
 
 ---
 
-## 六、变更记录(本文件)
+## 六、一键启动(Docker Compose · 0918 T3 新增)
+
+> Phase 1 #8 · Docker Compose 一键启动 · 跨 backend + frontend + 服务依赖三层桥梁
+
+### 0. 前置条件
+
+- Docker Desktop 或 Docker Engine(>= 24.x)
+- 复制环境变量模板并生成强 secret:
+
+```bash
+cp .env.example .env
+python3 -c "import secrets;print(secrets.token_urlsafe(32))"   # 把输出粘贴到 .env 的 PSY_JWT_SECRET=
+```
+
+### 1. 一键启动
+
+```bash
+# 在仓库根 /Users/aaron/Mac/Consultant/10-心理-Psychology/_PsychologyLib/PsychologyWeb/
+docker compose up -d --build
+# 等待 ~30s(backend 健康检查 + frontend nginx 就绪)
+docker compose ps                                       # 应见 backend=healthy / frontend=healthy
+docker compose logs -f                                  # 实时日志
+```
+
+启动后:
+
+- 浏览器打开 **http://127.0.0.1:8080** ← frontend nginx(默认端口)
+- 页面入口:测评(`/scales`)/ 情绪打卡(`/checkin`)/ 情绪日历(`/calendar`)/ 科普(`/articles`)/ 登录(`/login`)
+- 后端 API 由 frontend nginx 反代,前端不需感知 backend 端口
+- Swagger UI:**http://127.0.0.1:8080/docs**
+- 健康检查:**http://127.0.0.1:8080/health**
+
+### 2. 常用运维
+
+```bash
+docker compose ps                    # 服务状态
+docker compose logs -f backend       # 后端日志
+docker compose logs -f frontend      # 前端 nginx 日志
+docker compose restart backend       # 重启后端(代码改完镜像重建后可做)
+docker compose exec backend sh       # 进后端容器调试
+docker compose down                  # 停止(保留 volume psy-diary-store)
+docker compose down -v               # 停止并删除 volume(慎用,会丢日记密文)
+```
+
+### 3. 架构
+
+```
+host:8080
+    ↓
+┌─────────────────────────────┐
+│ frontend (nginx:1.27-alpine)│  ← 静态文件 + 反代 /api/* /auth/* /docs /health
+│ 容器内 8080                  │
+└─────────────────────────────┘
+    │ psy-net bridge
+    ↓ proxy_pass http://backend:8000
+┌─────────────────────────────┐
+│ backend (python:3.11-slim)  │  ← FastAPI + uvicorn(11 端点)
+│ 容器内 8000,不对外暴露         │
+│ 写 volume psy-diary-store     │  ← 日记密文持久化
+└─────────────────────────────┘
+```
+
+详见 `docker-compose.yml` / `backend/Dockerfile` / `frontend/Dockerfile` / `frontend/nginx.conf`。
+
+### 4. 关键设计选择(5 条)
+
+1. **frontend 不引 Node 构建** —— 纯 ES Module 静态文件,0 依赖,Docker 镜像 = nginx + COPY,构建 < 5s
+2. **backend 不引数据库** —— Phase 0 JSON 数据由 docker COPY 进镜像只读;日记密文用命名 volume 持久化
+3. **nginx 反代所有后端路径** —— `/api/*` + `/auth/*` + `/openapi.json` + `/docs` + `/health`,前端无需感知 backend 端口
+4. **backend 仅暴露 docker 网络,不对外** —— 单机起步,避免 8000 端口被外部直接访问
+5. **环境变量注入而非 baked** —— `PSY_JWT_SECRET` 从 `.env` 读入,不写进镜像层
+
+---
+
+## 七、变更记录(本文件)
 
 - **2026-09-06 T3** README 实质化 + 新增 `scripts/inventory.py` 资产清单生成器
   - **新增** `scripts/inventory.py`(~290 行,0906 T3):扫 `data/` 下 20 JSON 汇成清单,支持 `--format table|json` + `-o` 写文件,默认 markdown 表格便于飞书日报粘贴;字段路径已适配:顶层 3 资产用 `stats.total_tags/total_keywords/total_resources`,单量表用 `metadata.version` + `len(items)` + `metadata.created_at`,索引用 `stats.ready`
@@ -116,6 +190,18 @@ python3 scripts/inventory.py -o docs/data_inventory.md
 - **2026-08-25 T5** 清理 `README.md` git merge 冲突,取 GitHub 端版本(只剩 3 行 stub `# PsychologyAdvisor` + 2 行说明)
 
 > 详细变更记录见 `项目开发计划.md` 末尾"## 变更记录"段(0824 ~ 0905 共 12 条,0906 T3 条目待加)。
+
+## 附录 · 关联文档
+
+- `项目开发计划.md` — 总计划 + 变更记录(0824 ~ 至今)
+- `心理顾问开发架构与计划.md` — 详版架构(0826 入档,§1-§10)
+- `backend/README.md` — 后端细节(FastAPI 11 端点 / JWT / E2E 加密)
+- `frontend/README.md` — 前端细节(0 依赖 / hash 路由 / 10 文件 / 3290 行)
+- `docker-compose.yml` — Docker 一键启动编排(本轮新增)
+- `backend/Dockerfile` — 后端镜像构建(本轮新增)
+- `frontend/Dockerfile` — 前端 nginx 镜像构建(本轮新增)
+- `frontend/nginx.conf` — 反代配置(本轮新增)
+- `.env.example` — 环境变量模板(本轮新增)
 
 ---
 

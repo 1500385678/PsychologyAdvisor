@@ -31,7 +31,7 @@
 - markdown 库(marked / markdown-it / showdown,0914 自写 0 依赖渲染器,0917 不引)
 - 真飞书 OAuth 跳转(0917 是 mock 模式,生产替换 `backend/main.py` `_exchange_feishu_code` 即可)
 - Refresh token(JWT 24h 过期重新走 OAuth,符合日记低频访问场景)
-- Docker Compose(Phase 1 #8,留 MVP 收尾,0918+)
+- Docker Compose(Phase 1 #8,✅ 0918 T3 立,见 §三 3.2 + 根 README §六)
 - 状态管理(无 Pinia / Redux / Zustand)
 - 构建工具(无 Vite / Webpack,纯浏览器 ES Module 加载)
 - 打包 / 压缩 / Tree Shaking
@@ -61,6 +61,8 @@ frontend/
 
 ## 三、本地启动
 
+### 3.1 方式 A:Python http.server(开发热重载)
+
 无需任何前端依赖。**必须先启动后端**(否则测评页 fetch 会 404):
 
 ```bash
@@ -80,6 +82,25 @@ npm run dev
 # 或直接打开
 open frontend/index.html
 ```
+
+### 3.2 方式 B:Docker Compose(0918 T3 新增 · 推荐)
+
+```bash
+# 仓库根 /Users/aaron/Mac/Consultant/10-心理-Psychology/_PsychologyLib/PsychologyWeb/
+cp .env.example .env
+python3 -c "import secrets;print(secrets.token_urlsafe(32))"   # 粘贴到 .env 的 PSY_JWT_SECRET=
+docker compose up -d --build
+# 浏览器打开 http://127.0.0.1:8080
+# Swagger UI:http://127.0.0.1:8080/docs
+```
+
+镜像细节见 `frontend/Dockerfile`(nginx:1.27-alpine + COPY index.html/src/,构建 < 5s)+ `frontend/nginx.conf`(反代 /api/* /auth/* /docs /health 给 backend:8000);顶层编排见 `docker-compose.yml`。
+
+**方式 A vs B 选择**:
+
+- 开发热重载代码 / 改 CSS:用方式 A(`uvicorn --reload` + `python3 -m http.server`)
+- 单机起步演示 / 给非开发者看:用方式 B(`docker compose up -d --build`)
+- 生产部署(Phase 2+):沿用方式 B,只需换 .env 的 PSY_JWT_SECRET
 
 启动后预期:
 
@@ -120,6 +141,18 @@ API_BASE 默认 `http://127.0.0.1:8000`,可通过 `window.__PSY_API_BASE__` 覆�
 **鉴权**:0917 T3 起 `Authorization: Bearer <jwt>` 头由 auth.js.authedFetch 自动注入,401 自动登出;密码学层面 AES-GCM 256 + PBKDF2-SHA256-200k,服务端绝不见明文 passphrase;JWT HS256 secret 由 `PSY_JWT_SECRET` 环境变量控制,默认 dev 占位(生产必须改)。
 
 ## 五、变更记录
+
+- **2026-09-18 T3** Phase 1 #8 'Docker Compose 一键启动' · 跨 backend + frontend + 服务依赖三层落地
+  - **新增 2 文件**:`frontend/Dockerfile`(nginx:1.27-alpine 基础,EXPOSE 8080 + HEALTHCHECK wget /,CMD 用 nginx 默认前台启动)+ `frontend/nginx.conf`(try_files 兜底 hash 路由 / 反代 `/api/*` + `/auth/*` + `/openapi.json` + `/docs` + `/health` 给 backend:8000 / gzip + Cache-Control)
+  - **新增 3 仓库根文件**:`docker-compose.yml`(2 service + 1 network + 1 volume,命名 volume `psy-diary-store` 持久化)+ `.env.example`(PSY_JWT_SECRET 模板 + 生成命令注释)+ `.dockerignore`(build 上下文忽略 .git / .Log / __pycache__ / *.md 文档 / diary_store)
+  - **更新 1 文件**:`.gitignore` 加 `.env` 不入库
+  - **就位 Phase 1 checkbox 中 #8 'Docker Compose 一键启动'**:可勾 `项目开发计划.md` §六 #254,本轮勾选
+  - **业务规则**(5 条):① frontend 不引 Node 构建 = nginx + COPY 静态文件,镜像构建 < 5s ② backend 不引数据库 = Phase 0 JSON 由 docker COPY 只读,日记密文用命名 volume 持久化 ③ nginx 反代所有后端路径(`/api/*` + `/auth/*` + `/openapi.json` + `/docs` + `/health`),前端不感知 backend 端口 ④ backend 仅暴露 docker 网络 8000 不对外(单机起步) ⑤ 环境变量从 `.env` 注入,`PSY_JWT_SECRET` 强校验 `:?` 启动时缺则失败
+  - **关键设计选择 4 条**:① **nginx 而非 caddy / traefik** —— 主流 LTS,配置直白,0909-0917 起的 0 依赖原则一致 ② **healthcheck 用 wget** —— nginx:alpine 自带,无需额外装 curl ③ **try_files 兜底 index.html** —— hash 路由由前端 router.js 接管,nginx 层只需把不存在的路径兜回 ④ **gzip + Cache-Control** —— 静态资源 1h,index.html 不缓存便于迭代
+  - **校验**(macOS 工作流约束"测完即关",**未实际跑 docker compose up --build**,仅就位 Dockerfile + compose + nginx 配置):① nginx.conf proxy_pass URL 拼写(后端无尾斜杠避免路径污染)② nginx.conf try_files 顺序(文件 → 目录 → 兜底 index.html)③ Dockerfile EXPOSE 与 compose ports 对齐(8080:8080)④ backend Dockerfile HEALTHCHECK 探 `/health` 而不是 `/`(避免 root 重定向浪费)
+  - **不动** `frontend/index.html` / `frontend/src/`(0918 不在业务代码范围,纯配置层)/ `backend/main.py` / `data/`(Phase 0 100% ready 不重写,build 时 COPY 进 backend 镜像)/ `docs/`(0825 至今 26 日空,0927 前 MVP 验收时一起补)/ §六 #247/#248/#249/#250/#251/#252/#253 已勾 7 项(避免 1 commit 勾 2 项反模式)
+  - **关键里程碑**:① 0825 立项以来 Phase 1 代码层 7 动 → 8 动就位 = **8/8 = 100% 🎉** ② Phase 1 checkbox 7/8 → **8/8 (87.5% → 100%) MVP Phase 1 全勾闭环** ③ 单机起步:docker compose up -d --build 即可获得完整可演示 demo ④ 距 MVP ~0928 剩 9 天 buffer(联调 8 项 + 收尾 + docs/ 补 README + 架构图 + W39 周报)
+  - 配套更新 §一 当前范围("不包含"段删 Docker Compose 一条,改为 §三 3.2 新方式)、§三 本地启动(分 3.1 直接 Python + 3.2 Docker Compose 双方式 + A/B 选择建议 3 条)、§五 变更记录(本条新增)
 
 - **2026-09-17 T3** Phase 1 #7 '飞书 OAuth 登录 + 端到端加密(用户日记)' · 跨 backend + frontend 双层落地
   - **新增 3 文件**:`src/auth.js` ~200 行(OAuth 流程 + JWT 状态 + subscribe 广播 + 401 自动登出 + authedFetch 自动注入 Bearer · 跨模块组件)+ `src/crypto.js` ~150 行(Web Crypto AES-GCM 256 + PBKDF2-SHA256-200k + fingerprint · 跨模块组件)+ `src/login_view.js` ~115 行(已登录态展示 user_id + 登出 / 未登录态飞书一键登录按钮 + passphrase 输入提示)

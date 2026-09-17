@@ -1,0 +1,85 @@
+# PsychologyAdvisor · Docker Compose 一键启动
+#
+# Phase 1 #8 Docker Compose(0918 T3 立)· 顶层编排
+#   2 service:backend (FastAPI 8000) + frontend (nginx 8080 反代)
+#   1 network:psy-net (bridge,backend 仅前端可访问,不直接对外)
+#   1 volume:psy-diary-store(命名 volume,持久化用户日记密文)
+#
+# 启动方式(在仓库根 /Users/aaron/Mac/Consultant/10-心理-Psychology/_PsychologyLib/PsychologyWeb/):
+#   docker compose up -d --build           后台构建 + 启动
+#   docker compose logs -f                 查看日志
+#   docker compose down                    停止服务,保留 volume
+#   docker compose down -v                 停止服务 + 删除 volume(慎用,会丢日记)
+#   docker compose restart backend         重启某个服务
+#
+# 端口(默认):
+#   host:8080  → frontend nginx 容器内 8080
+#   backend 8000 不暴露 host(仅 docker 网络内)
+#
+# 注意:
+#   - PSY_JWT_SECRET 必填(从 .env 读取,见 .env.example)
+#   - Phase 0 数据(scales/concepts/crisis_keywords/mood_tags/resources)在 build 时 COPY 进 backend 镜像,
+#     本卷不挂载覆盖,避免误删仓库数据;开发模式如需热更新 data/ 内容,改 backend/Dockerfile COPY 段
+#   - 日记密文写入 backend/data/diary_store/,由命名 volume psy-diary-store 持久化
+
+name: psychology-advisor
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: psy-backend
+    image: psychologyadvisor-backend:0.1.0
+    restart: unless-stopped
+    # 内部端口 8000,不对外暴露(仅 frontend 反代可达)
+    expose:
+      - "8000"
+    environment:
+      # 0917 T3 起的 JWT HS256 secret,生产必须改
+      PSY_JWT_SECRET: ${PSY_JWT_SECRET:?PSY_JWT_SECRET 必须设置(参考 .env.example)}
+      # 0917 T3 日记存储目录(容器内)
+      PSY_DIARY_DIR: /app/backend/data/diary_store
+    volumes:
+      # 持久化用户日记密文(命名 volume,容器删后数据仍在)
+      - psy-diary-store:/app/backend/data/diary_store
+    networks:
+      - psy-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; r=urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=3); sys.exit(0 if r.status==200 else 1)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: psy-frontend
+    image: psychologyadvisor-frontend:0.1.0
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      # host:8080 → 容器内 nginx:8080
+      - "8080:8080"
+    networks:
+      - psy-net
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://127.0.0.1:8080/"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+networks:
+  psy-net:
+    driver: bridge
+    name: psy-net
+
+volumes:
+  psy-diary-store:
+    name: psy-diary-store
+    driver: local
